@@ -1,0 +1,40 @@
+# システム・ユーザー設定ファイル
+.cache/
+.config/
+.local/
+.vscode-server/
+
+# シェルの履歴・設定ファイル
+.bash_history
+.bash_logout
+.bashrc
+.profile
+.sudo_as_admin_successful
+
+# Python関連
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+env/
+
+# VSCode関連
+.vscode/
+.vscode-server/
+
+# SSH関連
+.ssh/
+*.pem
+*.pub
+
+# 環境変数や秘密情報
+.env
+secrets.json
+config.json
+
+# 一般的なログ・一時ファイル
+*.log
+*.tmp
+*.swp
+*.bak
