@@ -1,14 +1,24 @@
 import os
+import logging
 from dotenv import load_dotenv
 from openai import OpenAI
 
-# Load .env file
+# ログの設定
+logging.basicConfig(
+    filename='app.log',            # ログファイル名
+    filemode='a',                  # 'a'は追記モード（既存のログに追記する）
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=logging.INFO             # INFOレベル以上をログに記録
+)
+logger = logging.getLogger(__name__)
+
+# .envファイルの読み込み
 load_dotenv()
 
-# Retrieve API key from environment variables
+# 環境変数から APIキー を取得
 API_KEY = os.getenv("API_KEY")
 
-# Initialize OpenAI client
+# OpenAI クライアントの初期化
 client = OpenAI(api_key=API_KEY)
 MODEL = "gpt-4o-mini"
 
@@ -30,6 +40,10 @@ Instructions:
 - Include numbers or specific proper nouns as necessary.
 - When presenting information, be sure to provide references or sources for each piece of information.
 """
+    # ログにプロンプトを出力
+    logger.info("=== Step 1: Knowledge Retrieval ===")
+    logger.info("Prompt to GPT:\n%s", prompt,"\n\n")
+
     response = client.chat.completions.create(
         model=MODEL,
         messages=[
@@ -37,7 +51,12 @@ Instructions:
             {"role": "user", "content": prompt},
         ]
     )
-    return response.choices[0].message.content
+    output_text = response.choices[0].message.content
+
+    # ログにGPTのレスポンスを出力
+    logger.info("Response from GPT:\n%s", output_text,"\n\n")
+
+    return output_text
 
 def step2_reasoning(question: str, knowledge_from_step1: str) -> str:
     """
@@ -60,6 +79,10 @@ Instructions:
 3. At this stage, do not provide the final conclusion. Instead, clarify what evidence supports your reasoning,
    how you compare or evaluate the data, and outline the Sub Points or Supporting Data under the Pyramid Principle.
 """
+    # ログにプロンプトを出力
+    logger.info("=== Step 2: Reasoning and Organization ===")
+    logger.info("Prompt to GPT:\n%s", prompt,"\n\n")
+
     response = client.chat.completions.create(
         model=MODEL,
         messages=[
@@ -67,7 +90,12 @@ Instructions:
             {"role": "user", "content": prompt},
         ]
     )
-    return response.choices[0].message.content
+    output_text = response.choices[0].message.content
+
+    # ログにGPTのレスポンスを出力
+    logger.info("Response from GPT:\n%s", output_text,"\n\n")
+
+    return output_text
 
 def step3_final_answer(question: str, knowledge_from_step1: str, reasoning_from_step2: str) -> str:
     """
@@ -89,6 +117,10 @@ Instructions:
 - Summarize the knowledge and reasoning in accordance with the Pyramid Principle (Main Point, Sub Points, Supporting Data) and provide the final conclusion.
 - Present the final answer concisely, along with the key reasons that lead to it.
 """
+    # ログにプロンプトを出力
+    logger.info("=== Step 3: Final Answer ===")
+    logger.info("Prompt to GPT:\n%s", prompt,"\n\n")
+
     response = client.chat.completions.create(
         model=MODEL,
         messages=[
@@ -96,11 +128,17 @@ Instructions:
             {"role": "user", "content": prompt},
         ]
     )
-    return response.choices[0].message.content
+    output_text = response.choices[0].message.content
+
+    # ログにGPTのレスポンスを出力
+    logger.info("Response from GPT:\n%s", output_text,"\n\n\n\n")
+
+    return output_text
 
 def main():
-    # Get the user's question
+    # ユーザーからの質問を受け取る
     user_question = input("Please enter your question: ")
+    logger.info("User's question: %s", user_question,"\n\n")
 
     # Step 1: Knowledge retrieval
     knowledge = step1_knowledge_retrieval(user_question)
