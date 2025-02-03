@@ -42,7 +42,7 @@ Instructions:
 """
     # ログにプロンプトを出力
     logger.info("=== Step 1: Knowledge Retrieval ===")
-    logger.info("Prompt to GPT:\n%s", prompt,"\n\n")
+    logger.info(f"Prompt to GPT:\n{prompt}\n\n")
 
     response = client.chat.completions.create(
         model=MODEL,
@@ -54,7 +54,7 @@ Instructions:
     output_text = response.choices[0].message.content
 
     # ログにGPTのレスポンスを出力
-    logger.info("Response from GPT:\n%s", output_text,"\n\n")
+    logger.info(f"Response from GPT:\n{output_text}\n\n")
 
     return output_text
 
@@ -81,7 +81,7 @@ Instructions:
 """
     # ログにプロンプトを出力
     logger.info("=== Step 2: Reasoning and Organization ===")
-    logger.info("Prompt to GPT:\n%s", prompt,"\n\n")
+    logger.info(f"Prompt to GPT:\n{prompt}\n\n")
 
     response = client.chat.completions.create(
         model=MODEL,
@@ -93,7 +93,7 @@ Instructions:
     output_text = response.choices[0].message.content
 
     # ログにGPTのレスポンスを出力
-    logger.info("Response from GPT:\n%s", output_text,"\n\n")
+    logger.info(f"Response from GPT:\n{output_text}\n\n")
 
     return output_text
 
@@ -119,7 +119,7 @@ Instructions:
 """
     # ログにプロンプトを出力
     logger.info("=== Step 3: Final Answer ===")
-    logger.info("Prompt to GPT:\n%s", prompt,"\n\n")
+    logger.info(f"Prompt to GPT:\n{prompt}\n\n")
 
     response = client.chat.completions.create(
         model=MODEL,
@@ -131,14 +131,14 @@ Instructions:
     output_text = response.choices[0].message.content
 
     # ログにGPTのレスポンスを出力
-    logger.info("Response from GPT:\n%s", output_text,"\n\n\n\n")
+    logger.info(f"Response from GPT:\n{output_text}\n\n\n\n")
 
     return output_text
 
 def main():
     # ユーザーからの質問を受け取る
     user_question = input("Please enter your question: ")
-    logger.info("User's question: %s", user_question,"\n\n")
+    logger.info(f"User's question: \n{user_question}\n\n")
 
     # Step 1: Knowledge retrieval
     knowledge = step1_knowledge_retrieval(user_question)
