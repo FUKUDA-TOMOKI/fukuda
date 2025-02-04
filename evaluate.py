@@ -148,6 +148,10 @@ def main():
     data = data[args.start:args.end] if args.end is not None else data[args.start:]
     extracted_data = extract_questions_and_answers(data)
 
+    # PoT Score と CoT Score の配列を初期化
+    pot_scores = []
+    cot_scores = []
+
     # 各質問に対して回答を生成し、スコアを計算
     for idx, entry in enumerate(extracted_data):
         question_text = entry["question"]
@@ -170,6 +174,16 @@ def main():
         cot_score = evaluate_answer(correct_mention, cot_answer_final)
         print(f"  PoT score: {pot_score:.2f}")
         print(f"  CoT score: {cot_score:.2f}")
+
+        # 配列にスコアを追加
+        pot_scores.append(pot_score)
+        cot_scores.append(cot_score)
+
+        # 現在までの平均スコアを計算して表示
+        avg_pot = sum(pot_scores) / len(pot_scores)
+        avg_cot = sum(cot_scores) / len(cot_scores)
+        print(f"  現在までの平均 PoT score: {avg_pot:.2f}")
+        print(f"  現在までの平均 CoT score: {avg_cot:.2f}\n")
 
 if __name__ == "__main__":
     main()
