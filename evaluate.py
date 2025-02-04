@@ -158,7 +158,7 @@ def generate_answer(question_text: str) -> str:
     """
     # 本来はここでユーザーの入力を集めるなどの処理を行う
     # ここでは固定の文字列を返す例
-    return "the old man is here"  # ダミー
+    return "Todd Frazier"  # ダミー
 
 
 def main():
@@ -170,7 +170,7 @@ def main():
             "answer": {
                 "answerType": "entity",
                 # 単一型 → カンマなし
-                "mention": "old man"
+                "mention": "6"
             }
         },
         {
