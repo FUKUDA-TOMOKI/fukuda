@@ -17,7 +17,12 @@ def main(user_question: str) -> str:
     # user_question = input("質問を入力してください: ")
 
     # PoTプロンプトを生成
-    pot_prompt = user_question + " Let's think step by step." + " Please write your final conclusion immediately after the '### Conclusion' section header."
+    pot_prompt = (
+        user_question +
+        "\nLet's think step by step." +
+        "\nPlease write your final conclusion immediately after the '### Conclusion' section header." +
+        "\nPlease use Arabic numerals (e.g., 1, 2, 3) when writing numbers, rather than spelling them out with alphabetic characters."
+    )
 
     # ChatCompletion APIにリクエストを送信
     response = client.chat.completions.create(
