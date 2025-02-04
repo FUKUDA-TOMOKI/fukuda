@@ -25,7 +25,6 @@ def normalize_text(text: str, remove_comma: bool = False) -> str:
     text = text.strip().lower()
     return text
 
-
 def levenshtein_distance(s1: str, s2: str) -> int:
     """
     レーベンシュタイン距離（編集距離）を計算する (動的計画法)。
@@ -49,7 +48,6 @@ def levenshtein_distance(s1: str, s2: str) -> int:
 
     return dp[len_s1][len_s2]
 
-
 def split_into_chunks(text: str, chunk_size: int) -> List[str]:
     """
     テキストを単語ごとに分割し、chunk_sizeごとにスライドさせながら区切る。
@@ -60,7 +58,6 @@ def split_into_chunks(text: str, chunk_size: int) -> List[str]:
         chunk = " ".join(words[i : i + chunk_size])
         chunks.append(chunk)
     return chunks
-
 
 def score_single_answer(correct_answer: str, user_answer: str) -> int:
     """
@@ -82,7 +79,6 @@ def score_single_answer(correct_answer: str, user_answer: str) -> int:
             min_dist = dist
     return min_dist
 
-
 def score_enumerated_answers(correct_answers: List[str], user_answer: str) -> float:
     """
     列挙型の正解（複数の正解要素）それぞれについて score_single_answer を計算し、
@@ -97,13 +93,11 @@ def score_enumerated_answers(correct_answers: List[str], user_answer: str) -> fl
         total_score += dist
     return total_score / len(correct_answers)
 
-
 def is_enumerated_answer(answer_mention: str) -> bool:
     """
     カンマが含まれていれば列挙型とみなす。
     """
     return ',' in answer_mention
-
 
 def evaluate_answer(correct_mention: str, user_answer: str) -> float:
     """
@@ -130,7 +124,6 @@ def evaluate_answer(correct_mention: str, user_answer: str) -> float:
         user_answer_normalized = normalize_text(user_answer, remove_comma=True)
         return score_single_answer(correct_answer, user_answer_normalized)
 
-
 def extract_questions_and_answers(data):
     """
     JSON の各要素から:
@@ -152,6 +145,19 @@ def extract_questions_and_answers(data):
         })
     return extracted_data
 
+def extract_final_answer(answer: str) -> str:
+    """
+    回答文から「### Conclusion」という文字列以降の部分のみを抽出する。
+    見つからなかった場合は、その旨を print して元の回答を返す。
+    """
+    marker = "### Conclusion"
+    index = answer.find(marker)
+    if index != -1:
+        # marker の後ろの部分を返す (marker 自体は含まない)
+        return answer[index + len(marker):].strip()
+    else:
+        print("『### Conclusion』が見つかりませんでした。")
+        return answer
 
 def main():
     # ダミーデータ: 単一型/列挙型混在
@@ -179,16 +185,19 @@ def main():
         pot_answer = pot_main(question_text)
         cot_answer = cot_main(question_text)
 
+        # 「### Conclusion」以降の部分のみを抽出
+        pot_answer_final = extract_final_answer(pot_answer)
+        cot_answer_final = extract_final_answer(cot_answer)
+
         print(f"Q{idx+1}: {question_text}")
         print(f"  Correct mention: {correct_mention}")
-        print(f"  PoT answer: {pot_answer}")
-        print(f"  CoT answer: {cot_answer}")
+        print(f"  PoT answer (final): {pot_answer_final}")
+        print(f"  CoT answer (final): {cot_answer_final}")
 
-        pot_score = evaluate_answer(correct_mention, pot_answer)
-        cot_score = evaluate_answer(correct_mention, cot_answer)
+        pot_score = evaluate_answer(correct_mention, pot_answer_final)
+        cot_score = evaluate_answer(correct_mention, cot_answer_final)
         print(f"  PoT score: {pot_score:.2f}")
         print(f"  CoT score: {cot_score:.2f}")
-
 
 if __name__ == "__main__":
     main()
