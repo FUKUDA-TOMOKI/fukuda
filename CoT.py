@@ -12,9 +12,9 @@ API_KEY = os.getenv("API_KEY")
 client = OpenAI(api_key=API_KEY)
 MODEL = "gpt-4o-mini"
 
-def main():
+def main(user_question: str) -> str:
     # ユーザーから任意の質問を受け取る
-    user_question = input("質問を入力してください: ")
+    # user_question = input("質問を入力してください: ")
 
     # PoTプロンプトを生成
     pot_prompt = user_question + " Let's think step by step."

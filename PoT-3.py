@@ -135,9 +135,9 @@ Instructions:
 
     return output_text
 
-def main():
+def main(user_question: str) -> str:
     # ユーザーからの質問を受け取る
-    user_question = input("Please enter your question: ")
+    # user_question = input("Please enter your question: ")
     logger.info(f"User's question: \n{user_question}\n\n")
 
     # Step 1: Knowledge retrieval
