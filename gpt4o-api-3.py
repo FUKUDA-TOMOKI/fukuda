@@ -142,18 +142,19 @@ def main():
 
     # Step 1: Knowledge retrieval
     knowledge = step1_knowledge_retrieval(user_question)
-    print("\n----- Step 1: Knowledge Retrieval -----")
-    print(knowledge)
+    # print("\n----- Step 1: Knowledge Retrieval -----")
+    # print(knowledge)
 
     # Step 2: Reasoning and organization
     reasoning = step2_reasoning(user_question, knowledge)
-    print("\n----- Step 2: Reasoning and Organization -----")
-    print(reasoning)
+    # print("\n----- Step 2: Reasoning and Organization -----")
+    # print(reasoning)
 
     # Step 3: Final answer
     final_answer = step3_final_answer(user_question, knowledge, reasoning)
-    print("\n===== Final Answer =====")
-    print(final_answer)
+    # print("\n===== Final Answer =====")
+    # print(final_answer)
+    return final_answer
 
 if __name__ == "__main__":
     main()
