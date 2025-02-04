@@ -1,6 +1,6 @@
 import re
 import json
-import argparse
+import random
 from typing import List
 from PoT_3 import main as pot_main
 from CoT import main as cot_main
@@ -135,18 +135,19 @@ def extract_final_answer(answer: str) -> str:
         return answer
 
 def main():
-    parser = argparse.ArgumentParser(description="mintaka_test.json のデータに基づいて回答を評価する")
-    parser.add_argument('--start', type=int, default=30, help="開始インデックス (inclusive)")
-    parser.add_argument('--end', type=int, default=100, help="終了インデックス (exclusive)")
-    args = parser.parse_args()
+    # ここで問題数を指定（例: 10問）
+    num_questions = 10
 
     # mintaka_test.jsonからデータをロード
     with open("mintaka_test.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    # 指定されたインデックスでデータをスライス
-    data = data[args.start:args.end] if args.end is not None else data[args.start:]
-    extracted_data = extract_questions_and_answers(data)
+    # 指定された問題数分、ランダムに（重複なく）選択
+    if num_questions > len(data):
+        num_questions = len(data)
+    selected_data = random.sample(data, num_questions)
+
+    extracted_data = extract_questions_and_answers(selected_data)
 
     # PoT Score と CoT Score の配列を初期化
     pot_scores = []

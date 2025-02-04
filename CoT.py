@@ -25,7 +25,7 @@ def main(user_question: str) -> str:
     )
 
     # user_questionが5W1Hの質問かどうかを判定
-    # 5W1Hの質問でないならYes or Noを追加を追加
+    # 5W1Hの質問でないならYes or Noを追加
     if not user_question.startswith(("Who", "What", "When", "Where", "Why", "How", "Which", "Whose", "Whom", "Whomst")):
         pot_prompt += "\nPlease answer with either 'Yes' or 'No' when the question can clearly be answered using one of those options."
 
