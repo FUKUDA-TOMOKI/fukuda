@@ -1,8 +1,10 @@
 import re
 import json
+import argparse
 from typing import List
 from PoT_3 import main as pot_main
 from CoT import main as cot_main
+from Levenshtein import distance as levenshtein_distance  # 外部モジュールを利用
 
 def normalize_text(text: str, remove_comma: bool = False) -> str:
     """
@@ -14,39 +16,16 @@ def normalize_text(text: str, remove_comma: bool = False) -> str:
     """
     if remove_comma:
         # カンマも含めて置換
-        text = re.sub(r"[\.,;:\-]", " ", text)
+        text = re.sub(r"[\.,;:*\"\-]", " ", text)
     else:
         # カンマ以外を置換
-        text = re.sub(r"[\.;:\-]", " ", text)
+        text = re.sub(r"[\.;:*\"\-]", " ", text)
 
     # 複数の空白を1つにまとめる
     text = re.sub(r"\s+", " ", text)
     # 前後の空白を除去し、小文字化
     text = text.strip().lower()
     return text
-
-def levenshtein_distance(s1: str, s2: str) -> int:
-    """
-    レーベンシュタイン距離（編集距離）を計算する (動的計画法)。
-    """
-    len_s1, len_s2 = len(s1), len(s2)
-    dp = [[0] * (len_s2 + 1) for _ in range(len_s1 + 1)]
-
-    for i in range(len_s1 + 1):
-        dp[i][0] = i
-    for j in range(len_s2 + 1):
-        dp[0][j] = j
-
-    for i in range(1, len_s1 + 1):
-        for j in range(1, len_s2 + 1):
-            cost = 0 if s1[i - 1] == s2[j - 1] else 1
-            dp[i][j] = min(
-                dp[i - 1][j] + 1,      # 削除
-                dp[i][j - 1] + 1,      # 挿入
-                dp[i - 1][j - 1] + cost  # 置換 (同じ文字ならcost=0)
-            )
-
-    return dp[len_s1][len_s2]
 
 def split_into_chunks(text: str, chunk_size: int) -> List[str]:
     """
@@ -106,15 +85,11 @@ def evaluate_answer(correct_mention: str, user_answer: str) -> float:
       - 単一型はカンマを削除したうえで単一型スコアを算出
     """
     if is_enumerated_answer(correct_mention):
-        # 列挙型: カンマで分割し、各要素を正規化(カンマは取り除かない設定は不要)
-        # ただし、分割後は単一型としてスコア比較するので、個々の要素の正規化時には remove_comma=True でよい
-        # → まず「列挙型を 'そのまま' 正規化してから split」するか、もしくは split してから個別に正規化するか
-        #   ここでは先にカンマ含みのまま正規化→splitします
+        # 列挙型: まず正規化後、カンマで分割
         mention_normalized = normalize_text(correct_mention, remove_comma=False)
         correct_items = [x.strip() for x in mention_normalized.split(',') if x.strip()]
 
-        # ユーザー回答側は単一フレーズではないが、
-        # 全体を「単一比較に使う形式」に正規化
+        # ユーザー回答はカンマを除去して単一比較形式に正規化
         user_answer_normalized = normalize_text(user_answer, remove_comma=True)
 
         return score_enumerated_answers(correct_items, user_answer_normalized)
@@ -160,28 +135,26 @@ def extract_final_answer(answer: str) -> str:
         return answer
 
 def main():
-    # ダミーデータ: 単一型/列挙型混在
-    data_json = [
-        {
-            "id": "example_2",
-            "question": "Name three biggest cities in the world.",
-            "answer": {
-                "answerType": "entity",
-                # 列挙型 → カンマ区切り
-                "mention": "New York, London, Tokyo"
-            }
-        }
-    ]
+    parser = argparse.ArgumentParser(description="mintaka_test.json のデータに基づいて回答を評価する")
+    parser.add_argument('--start', type=int, default=0, help="開始インデックス (inclusive)")
+    parser.add_argument('--end', type=int, default=10, help="終了インデックス (exclusive)")
+    args = parser.parse_args()
 
-    # JSONデータから question と正解(mention) を抽出
-    extracted_data = extract_questions_and_answers(data_json)
+    # mintaka_test.jsonからデータをロード
+    with open("mintaka_test.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # 指定されたインデックスでデータをスライス
+    data = data[args.start:args.end] if args.end is not None else data[args.start:]
+    extracted_data = extract_questions_and_answers(data)
 
     # 各質問に対して回答を生成し、スコアを計算
     for idx, entry in enumerate(extracted_data):
         question_text = entry["question"]
         correct_mention = entry["answer"]  # 実際の正解
+        print(f"Q{idx+1}: {question_text}")
 
-        # ユーザー回答を生成（本来はユーザー入力取得など）
+        # ユーザー回答を生成（実際はユーザー入力などを利用）
         pot_answer = pot_main(question_text)
         cot_answer = cot_main(question_text)
 
@@ -189,7 +162,6 @@ def main():
         pot_answer_final = extract_final_answer(pot_answer)
         cot_answer_final = extract_final_answer(cot_answer)
 
-        print(f"Q{idx+1}: {question_text}")
         print(f"  Correct mention: {correct_mention}")
         print(f"  PoT answer (final): {pot_answer_final}")
         print(f"  CoT answer (final): {cot_answer_final}")
