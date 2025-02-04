@@ -117,7 +117,7 @@ Instructions:
 - Summarize the knowledge and reasoning in accordance with the Pyramid Principle (Main Point, Sub Points, Supporting Data) and provide the final conclusion.
 - Present the final answer concisely, along with the key reasons that lead to it.
 - Please use Arabic numerals (e.g., 1, 2, 3) when writing numbers, rather than spelling them out with alphabetic characters.
-- Please answer with either 'Yes' or 'No' when the question can be answered using one of those options.
+- Please answer with either 'Yes' or 'No' when the question can clearly be answered using one of those options.
 - Please write your final conclusion immediately after the '### Conclusion' section header.
 """
     # ログにプロンプトを出力

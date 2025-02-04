@@ -22,6 +22,7 @@ def main(user_question: str) -> str:
         "\nLet's think step by step." +
         "\nPlease write your final conclusion immediately after the '### Conclusion' section header." +
         "\nPlease use Arabic numerals (e.g., 1, 2, 3) when writing numbers, rather than spelling them out with alphabetic characters."
+        "\nPlease answer with either 'Yes' or 'No' when the question can clearly be answered using one of those options."
     )
 
     # ChatCompletion APIにリクエストを送信
