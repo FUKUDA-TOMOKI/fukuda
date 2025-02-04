@@ -1,7 +1,7 @@
 import re
 import json
 from typing import List
-from PoT-3 import main as pot_main
+from PoT_3 import main as pot_main
 from CoT import main as cot_main
 
 def normalize_text(text: str, remove_comma: bool = False) -> str:
