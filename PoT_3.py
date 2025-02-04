@@ -142,7 +142,7 @@ Instructions:
 
     return output_text
 
-def main(user_question: str) -> str:
+def main(user_question: str, answer_type: str) -> str:
     # ユーザーからの質問を受け取る
     # user_question = input("Please enter your question: ")
     logger.info(f"User's question: \n{user_question}\n\n")
@@ -158,7 +158,7 @@ def main(user_question: str) -> str:
     # print(reasoning)
 
     # Step 3: Final answer
-    final_answer = step3_final_answer(user_question, knowledge, reasoning)
+    final_answer = step3_final_answer(user_question, knowledge, reasoning, answer_type)
     # print("\n===== Final Answer =====")
     # print(final_answer)
     return final_answer
