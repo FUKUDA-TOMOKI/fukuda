@@ -2,39 +2,35 @@ import re
 import json
 from typing import List
 
-def normalize_text(text: str) -> str:
+def normalize_text(text: str, remove_comma: bool = False) -> str:
     """
     前処理を行う:
-      - 記号の正規化(コロン、カンマ、セミコロン、ハイフンなど)
+      - 記号の正規化(コロン、セミコロン、ハイフンなど)
       - 余計な空白の除去
       - 小文字化
+      - remove_comma=True の場合のみカンマを削除
     """
-    # 1. 特定の記号をスペースに置換: （必要に応じて追加・調整）
-    #   例：",", ":", ";", "-" を空白に変換
-    text = re.sub(r"[\.,;:\-]", " ", text)
+    if remove_comma:
+        # カンマも含めて置換
+        text = re.sub(r"[\.,;:\-]", " ", text)
+    else:
+        # カンマ以外を置換
+        text = re.sub(r"[\.;:\-]", " ", text)
 
-    # 2. 複数の空白を一つにまとめる
+    # 複数の空白を1つにまとめる
     text = re.sub(r"\s+", " ", text)
-
-    # 3. 全て小文字に変換
+    # 前後の空白を除去し、小文字化
     text = text.strip().lower()
-
     return text
 
 
 def levenshtein_distance(s1: str, s2: str) -> int:
     """
-    レーベンシュタイン距離（編集距離）を計算する。
-    動的計画法で実装。
+    レーベンシュタイン距離（編集距離）を計算する (動的計画法)。
     """
-    # Pythonic に書くなら、外部ライブラリ python-Levenshtein や rapidfuzz などがあるが、
-    # ここでは純粋なDPで実装している。
     len_s1, len_s2 = len(s1), len(s2)
-
-    # 距離を格納するための2次元リスト (サイズ (len_s1+1) x (len_s2+1))
     dp = [[0] * (len_s2 + 1) for _ in range(len_s1 + 1)]
 
-    # 初期化
     for i in range(len_s1 + 1):
         dp[i][0] = i
     for j in range(len_s2 + 1):
@@ -46,7 +42,7 @@ def levenshtein_distance(s1: str, s2: str) -> int:
             dp[i][j] = min(
                 dp[i - 1][j] + 1,      # 削除
                 dp[i][j - 1] + 1,      # 挿入
-                dp[i - 1][j - 1] + cost  # 置換(文字が同じ場合はcost=0)
+                dp[i - 1][j - 1] + cost  # 置換 (同じ文字ならcost=0)
             )
 
     return dp[len_s1][len_s2]
@@ -54,15 +50,10 @@ def levenshtein_distance(s1: str, s2: str) -> int:
 
 def split_into_chunks(text: str, chunk_size: int) -> List[str]:
     """
-    テキストを単語ごとに分割し、chunk_sizeずつのスライドウィンドウで区切ったフレーズのリストを返す。
-    例：
-      text = "the old man lives in a castle"
-      chunk_size = 2
-      -> ["the old", "old man", "man lives", "lives in", "in a", "a castle"]
+    テキストを単語ごとに分割し、chunk_sizeごとにスライドさせながら区切る。
     """
     words = text.split()
     chunks = []
-    # スライドしながら chunk_size 語をまとめる
     for i in range(len(words) - chunk_size + 1):
         chunk = " ".join(words[i : i + chunk_size])
         chunks.append(chunk)
@@ -71,22 +62,17 @@ def split_into_chunks(text: str, chunk_size: int) -> List[str]:
 
 def score_single_answer(correct_answer: str, user_answer: str) -> int:
     """
-    単一型の正解に対して、ユーザーの回答を区切りながら最小のレーベンシュタイン距離を求める。
-    - correct_answer は前処理済みの単一正解
-    - user_answer は前処理済みの回答文
+    単一型の正解文字列とユーザー回答を比較し、
+    スライドさせた部分文字列との最小レーベンシュタイン距離を返す。
     """
-    # 正解の単語数
     correct_words = correct_answer.split()
     chunk_size = len(correct_words)
 
-    # 回答文を chunk_size 単語ずつスライドしながら区切る
     user_chunks = split_into_chunks(user_answer, chunk_size)
-
     if not user_chunks:
-        # もしユーザー回答があまりに短く、chunk が得られない場合
+        # ユーザー回答が短すぎる場合など
         return levenshtein_distance(correct_answer, user_answer)
 
-    # レーベンシュタイン距離を計算し、その最小値を返す
     min_dist = float('inf')
     for chunk in user_chunks:
         dist = levenshtein_distance(correct_answer, chunk)
@@ -95,75 +81,96 @@ def score_single_answer(correct_answer: str, user_answer: str) -> int:
     return min_dist
 
 
-def score_multiple_answers(correct_answers: List[str], user_answer: str) -> float:
+def score_enumerated_answers(correct_answers: List[str], user_answer: str) -> float:
     """
-    複数型の正解それぞれに対して score_single_answer を計算し、
-    その平均値をスコアとして返す。
+    列挙型の正解（複数の正解要素）それぞれについて score_single_answer を計算し、
+    その平均値を返す。
     """
     if not correct_answers:
-        return 0.0  # 正解が空リストならばスコア0など、状況に応じて決める
+        return 0.0
 
     total_score = 0
     for ans in correct_answers:
         dist = score_single_answer(ans, user_answer)
         total_score += dist
-
     return total_score / len(correct_answers)
 
 
-def is_enumerated_answer(answer_data: dict) -> bool:
+def is_enumerated_answer(answer_mention: str) -> bool:
     """
-    回答データ(answerフィールド)に複数要素があるかどうかを判定。
-    複数要素なら列挙型(True)、1つなら単一型(False)。
+    カンマが含まれていれば列挙型とみなす。
     """
-    answers = answer_data.get("answer", [])
-    if answers is None:
-        answers = []
-    return len(answers) > 1
+    return ',' in answer_mention
 
 
-def evaluate_answer(correct_data: dict, user_answer: str) -> float:
+def evaluate_answer(correct_mention: str, user_answer: str) -> float:
     """
-    JSON上の一問（正解データ）と、ユーザー回答文字列に対し、
-    スコアを計算して返す。
+    正解(mention文字列) と ユーザー回答 を受け取り、スコアを返す。
+      - 列挙型(カンマが含まれる場合)はカンマで分割→各要素を単一型として平均スコア
+      - 単一型はカンマを削除したうえで単一型スコアを算出
     """
-    # 1. 前処理
-    user_answer_normalized = normalize_text(user_answer)
+    if is_enumerated_answer(correct_mention):
+        # 列挙型: カンマで分割し、各要素を正規化(カンマは取り除かない設定は不要)
+        # ただし、分割後は単一型としてスコア比較するので、個々の要素の正規化時には remove_comma=True でよい
+        # → まず「列挙型を 'そのまま' 正規化してから split」するか、もしくは split してから個別に正規化するか
+        #   ここでは先にカンマ含みのまま正規化→splitします
+        mention_normalized = normalize_text(correct_mention, remove_comma=False)
+        correct_items = [x.strip() for x in mention_normalized.split(',') if x.strip()]
 
-    # JSONから正解を取り出す
-    answers = correct_data.get("answer", {})
-    answer_list = answers.get("answer", [])
+        # ユーザー回答側は単一フレーズではないが、
+        # 全体を「単一比較に使う形式」に正規化
+        user_answer_normalized = normalize_text(user_answer, remove_comma=True)
 
-    # 答えのタイプが "enumerated"（複数型） かどうか
-    # is_enumerated_answer() 関数で判定
-    if is_enumerated_answer(correct_data.get("answer", {})):
-        # 2-a. 複数型のケース
-        # 仮に answer_list が文字列ならカンマ split でリストにするが、
-        # データ形式が既に複数リストの場合はそのまま使う。
-        # 下の例では answer_list は ["Paris", "London", "Tokyo"] のような形を想定。
-        correct_answers = [normalize_text(ans) for ans in answer_list]
-        score = score_multiple_answers(correct_answers, user_answer_normalized)
+        return score_enumerated_answers(correct_items, user_answer_normalized)
     else:
-        # 2-b. 単一型のケース
-        # answer_list が 1つの場合を想定。
-        if not answer_list:
-            return 0.0  # 正解が空の場合の例外処理
+        # 単一型: カンマを削除して正規化
+        correct_answer = normalize_text(correct_mention, remove_comma=True)
+        user_answer_normalized = normalize_text(user_answer, remove_comma=True)
+        return score_single_answer(correct_answer, user_answer_normalized)
 
-        correct_answer = normalize_text(str(answer_list[0]))
-        score = score_single_answer(correct_answer, user_answer_normalized)
 
-    return score
+def extract_questions_and_answers(data):
+    """
+    JSON の各要素から:
+      - 質問文 (question)
+      - 回答データ (answer_data)
+      - 実際に用いる答え(mention)を取り出す
+    """
+    extracted_data = []
+    for item in data:
+        question = item.get("question", "Unknown Question")
+        answer_data = item.get("answer", {})
+        # 答えとして使うのは 'mention'
+        answer_mention = answer_data.get("mention", "Unknown Answer")
+
+        extracted_data.append({
+            "question": question,
+            "answer_data": answer_data,
+            "answer": answer_mention
+        })
+    return extracted_data
+
+
+def generate_answer(question_text: str) -> str:
+    """
+    問題文を受け取り、回答文を生成すると想定した関数。
+    実際にはダミーの文字列を返す。
+    """
+    # 本来はここでユーザーの入力を集めるなどの処理を行う
+    # ここでは固定の文字列を返す例
+    return "the old man is here"  # ダミー
 
 
 def main():
-    # 例示用のダミー問題データ
+    # ダミーデータ: 単一型/列挙型混在
     data_json = [
         {
             "id": "example_1",
             "question": "What is the phrase for an older male human?",
             "answer": {
                 "answerType": "entity",
-                "answer": ["old man"]  # 単一型
+                # 単一型 → カンマなし
+                "mention": "old man"
             }
         },
         {
@@ -171,26 +178,29 @@ def main():
             "question": "Name three famous cities in the world.",
             "answer": {
                 "answerType": "entity",
-                "answer": ["Paris", "London", "Tokyo"]  # 複数型
+                # 列挙型 → カンマ区切り
+                "mention": "Paris, London, Tokyo"
             }
         }
     ]
 
-    # それぞれに対しユーザー回答を仮定してスコアを計算してみる
-    user_answers = [
-        "The old man lives in a castle.",
-        "I like London, but Paris is also nice. Tokyo is far away."
-    ]
+    # JSONデータから question と正解(mention) を抽出
+    extracted_data = extract_questions_and_answers(data_json)
 
-    for idx, item in enumerate(data_json):
-        question = item["question"]
-        user_answer = user_answers[idx]
+    # 各質問に対して回答を生成し、スコアを計算
+    for idx, entry in enumerate(extracted_data):
+        question_text = entry["question"]
+        correct_mention = entry["answer"]  # 実際の正解
 
-        print(f"Q: {question}")
-        print(f"User answer: {user_answer}")
+        # ユーザー回答を生成（本来はユーザー入力取得など）
+        user_answer = generate_answer(question_text)
 
-        score = evaluate_answer(item, user_answer)
-        print(f"Score: {score}\n")
+        print(f"Q{idx+1}: {question_text}")
+        print(f"  Correct mention: {correct_mention}")
+        print(f"  User answer    : {user_answer}")
+
+        score = evaluate_answer(correct_mention, user_answer)
+        print(f"  Score: {score}\n")
 
 
 if __name__ == "__main__":
