@@ -30,8 +30,9 @@ def main(user_question: str) -> str:
 
     # 応答を表示
     answer = response.choices[0].message.content
-    print("\n===== 回答 =====")
-    print(answer)
+    # print("\n===== 回答 =====")
+    # print(answer)
+    return answer
 
 if __name__ == "__main__":
     main()
