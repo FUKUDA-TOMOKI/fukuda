@@ -56,7 +56,10 @@ def score_single_answer(correct_answer: str, user_answer: str) -> int:
         dist = levenshtein_distance(correct_answer, chunk)
         if dist < min_dist:
             min_dist = dist
-    return min_dist
+
+    # min_distの最大値が1になるように正規化
+    max_dist = len(correct_answer)
+    return 1 - min(min_dist, max_dist) / max_dist
 
 def score_enumerated_answers(correct_answers: List[str], user_answer: str) -> float:
     """
