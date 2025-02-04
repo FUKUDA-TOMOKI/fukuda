@@ -112,11 +112,13 @@ def extract_questions_and_answers(data):
         answer_data = item.get("answer", {})
         # 答えとして使うのは 'mention'
         answer_mention = answer_data.get("mention", "Unknown Answer")
+        answer_type = answer_data.get("answerType", "Unknown Answer Type")
 
         extracted_data.append({
             "question": question,
             "answer_data": answer_data,
-            "answer": answer_mention
+            "answer": answer_mention,
+            "answer_type": answer_type
         })
     return extracted_data
 
@@ -136,7 +138,7 @@ def extract_final_answer(answer: str) -> str:
 
 def main():
     # ここで問題数を指定（例: 10問）
-    num_questions = 10
+    num_questions = 50
 
     # mintaka_test.jsonからデータをロード
     with open("mintaka_test.json", "r", encoding="utf-8") as f:
@@ -157,11 +159,12 @@ def main():
     for idx, entry in enumerate(extracted_data):
         question_text = entry["question"]
         correct_mention = entry["answer"]  # 実際の正解
+        answer_type = entry["answer_type"]
         print(f"Q{idx+1}: {question_text}")
 
         # ユーザー回答を生成（実際はユーザー入力などを利用）
-        pot_answer = pot_main(question_text)
-        cot_answer = cot_main(question_text)
+        pot_answer = pot_main(question_text, answer_type)
+        cot_answer = cot_main(question_text, answer_type)
 
         # 「### Conclusion」以降の部分のみを抽出
         pot_answer_final = extract_final_answer(pot_answer)

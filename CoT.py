@@ -12,7 +12,7 @@ API_KEY = os.getenv("API_KEY")
 client = OpenAI(api_key=API_KEY)
 MODEL = "gpt-4o-mini"
 
-def main(user_question: str) -> str:
+def main(user_question: str, answer_type: str) -> str:
     # ユーザーから任意の質問を受け取る
     # user_question = input("質問を入力してください: ")
 
@@ -24,9 +24,8 @@ def main(user_question: str) -> str:
         "\nPlease use Arabic numerals (e.g., 1, 2, 3) when writing numbers, rather than spelling them out with alphabetic characters."
     )
 
-    # user_questionが5W1Hの質問かどうかを判定
-    # 5W1Hの質問でないならYes or Noを追加
-    if not user_question.startswith(("Who", "What", "When", "Where", "Why", "How", "Which", "Whose", "Whom", "Whomst")):
+    # booleanならYes or Noを追加
+    if answer_type == "boolean":
         pot_prompt += "\nPlease answer with either 'Yes' or 'No' when the question can clearly be answered using one of those options."
 
     # ChatCompletion APIにリクエストを送信

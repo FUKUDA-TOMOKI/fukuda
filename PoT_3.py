@@ -97,7 +97,7 @@ Instructions:
 
     return output_text
 
-def step3_final_answer(question: str, knowledge_from_step1: str, reasoning_from_step2: str) -> str:
+def step3_final_answer(question: str, knowledge_from_step1: str, reasoning_from_step2: str, answer_type: str) -> str:
     """
     Step 3: Integrate the results from Steps 1 and 2 to provide the final answer.
     """
@@ -120,9 +120,8 @@ Instructions:
 - Please write your final conclusion immediately after the '### Conclusion' section header.
 """
     
-    # user_questionが5W1Hの質問かどうかを判定
-    # 5W1Hの質問でないならYes or Noを追加
-    if not question.startswith(("Who", "What", "When", "Where", "Why", "How", "Which", "Whose", "Whom", "Whomst")):
+    # booleanならYes or Noを追加
+    if answer_type == "boolean":
         prompt += "\nPlease answer with either 'Yes' or 'No' when the question can clearly be answered using one of those options."
 
     # ログにプロンプトを出力
