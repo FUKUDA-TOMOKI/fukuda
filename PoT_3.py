@@ -117,9 +117,14 @@ Instructions:
 - Summarize the knowledge and reasoning in accordance with the Pyramid Principle (Main Point, Sub Points, Supporting Data) and provide the final conclusion.
 - Present the final answer concisely, along with the key reasons that lead to it.
 - Please use Arabic numerals (e.g., 1, 2, 3) when writing numbers, rather than spelling them out with alphabetic characters.
-- Please answer with either 'Yes' or 'No' when the question can clearly be answered using one of those options.
 - Please write your final conclusion immediately after the '### Conclusion' section header.
 """
+    
+    # user_questionが5W1Hの質問かどうかを判定
+    # 5W1Hの質問でないならYes or Noを追加
+    if not question.startswith(("Who", "What", "When", "Where", "Why", "How", "Which", "Whose", "Whom", "Whomst")):
+        prompt += "\nPlease answer with either 'Yes' or 'No' when the question can clearly be answered using one of those options."
+
     # ログにプロンプトを出力
     logger.info("=== Step 3: Final Answer ===")
     logger.info(f"Prompt to GPT:\n{prompt}\n\n")

@@ -136,8 +136,8 @@ def extract_final_answer(answer: str) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="mintaka_test.json のデータに基づいて回答を評価する")
-    parser.add_argument('--start', type=int, default=0, help="開始インデックス (inclusive)")
-    parser.add_argument('--end', type=int, default=30, help="終了インデックス (exclusive)")
+    parser.add_argument('--start', type=int, default=30, help="開始インデックス (inclusive)")
+    parser.add_argument('--end', type=int, default=100, help="終了インデックス (exclusive)")
     args = parser.parse_args()
 
     # mintaka_test.jsonからデータをロード

@@ -22,8 +22,12 @@ def main(user_question: str) -> str:
         "\nLet's think step by step." +
         "\nPlease write your final conclusion immediately after the '### Conclusion' section header." +
         "\nPlease use Arabic numerals (e.g., 1, 2, 3) when writing numbers, rather than spelling them out with alphabetic characters."
-        "\nPlease answer with either 'Yes' or 'No' when the question can clearly be answered using one of those options."
     )
+
+    # user_questionが5W1Hの質問かどうかを判定
+    # 5W1Hの質問でないならYes or Noを追加を追加
+    if not user_question.startswith(("Who", "What", "When", "Where", "Why", "How", "Which", "Whose", "Whom", "Whomst")):
+        pot_prompt += "\nPlease answer with either 'Yes' or 'No' when the question can clearly be answered using one of those options."
 
     # ChatCompletion APIにリクエストを送信
     response = client.chat.completions.create(
