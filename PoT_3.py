@@ -116,6 +116,7 @@ You are a capable assistant. Please use the following information to arrive at t
 Instructions:
 - Summarize the knowledge and reasoning in accordance with the Pyramid Principle (Main Point, Sub Points, Supporting Data) and provide the final conclusion.
 - Present the final answer concisely, along with the key reasons that lead to it.
+- Please write your final conclusion immediately after the '### Conclusion' section header.
 """
     # ログにプロンプトを出力
     logger.info("=== Step 3: Final Answer ===")

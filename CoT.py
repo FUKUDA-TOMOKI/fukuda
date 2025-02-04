@@ -17,7 +17,7 @@ def main(user_question: str) -> str:
     # user_question = input("質問を入力してください: ")
 
     # PoTプロンプトを生成
-    pot_prompt = user_question + " Let's think step by step."
+    pot_prompt = user_question + " Let's think step by step." + " Please write your final conclusion immediately after the '### Conclusion' section header."
 
     # ChatCompletion APIにリクエストを送信
     response = client.chat.completions.create(

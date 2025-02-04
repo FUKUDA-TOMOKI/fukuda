@@ -153,35 +153,16 @@ def extract_questions_and_answers(data):
     return extracted_data
 
 
-def generate_answer(question_text: str) -> str:
-    """
-    問題文を受け取り、回答文を生成すると想定した関数。
-    実際にはダミーの文字列を返す。
-    """
-    # 本来はここでユーザーの入力を集めるなどの処理を行う
-    # ここでは固定の文字列を返す例
-    return "Todd Frazier"  # ダミー
-
-
 def main():
     # ダミーデータ: 単一型/列挙型混在
     data_json = [
         {
-            "id": "example_1",
-            "question": "What is the phrase for an older male human?",
-            "answer": {
-                "answerType": "entity",
-                # 単一型 → カンマなし
-                "mention": "6"
-            }
-        },
-        {
             "id": "example_2",
-            "question": "Name three famous cities in the world.",
+            "question": "Name three biggest cities in the world.",
             "answer": {
                 "answerType": "entity",
                 # 列挙型 → カンマ区切り
-                "mention": "Paris, London, Tokyo"
+                "mention": "New York, London, Tokyo"
             }
         }
     ]
@@ -195,14 +176,18 @@ def main():
         correct_mention = entry["answer"]  # 実際の正解
 
         # ユーザー回答を生成（本来はユーザー入力取得など）
-        user_answer = generate_answer(question_text)
+        pot_answer = pot_main(question_text)
+        cot_answer = cot_main(question_text)
 
         print(f"Q{idx+1}: {question_text}")
         print(f"  Correct mention: {correct_mention}")
-        print(f"  User answer    : {user_answer}")
+        print(f"  PoT answer: {pot_answer}")
+        print(f"  CoT answer: {cot_answer}")
 
-        score = evaluate_answer(correct_mention, user_answer)
-        print(f"  Score: {score}\n")
+        pot_score = evaluate_answer(correct_mention, pot_answer)
+        cot_score = evaluate_answer(correct_mention, cot_answer)
+        print(f"  PoT score: {pot_score:.2f}")
+        print(f"  CoT score: {cot_score:.2f}")
 
 
 if __name__ == "__main__":
