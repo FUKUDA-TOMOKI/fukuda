@@ -2,10 +2,11 @@ import os
 import logging
 from dotenv import load_dotenv
 from openai import OpenAI
+from datetime import datetime
 
-# ログの設定
+# ログの設定（ファイル名には実行時の時刻を付与）
 logging.basicConfig(
-    filename='logs/app.log',            # ログファイル名
+    filename=f'pot_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log',  # ログファイル名
     filemode='a',                   # 'a'は追記モード（既存のログに追記する）
     format='%(asctime)s - %(levelname)s - %(message)s',
     level=logging.INFO              # INFOレベル以上をログに記録
