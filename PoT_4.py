@@ -5,7 +5,7 @@ from openai import OpenAI
 
 # ログの設定
 logging.basicConfig(
-    filename='app.log',            # ログファイル名
+    filename='logs/app.log',            # ログファイル名
     filemode='a',                   # 'a'は追記モード（既存のログに追記する）
     format='%(asctime)s - %(levelname)s - %(message)s',
     level=logging.INFO              # INFOレベル以上をログに記録
