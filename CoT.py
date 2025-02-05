@@ -21,13 +21,14 @@ def main(user_question: str, answer_type: str) -> str:
         user_question +
         "\nLet's think step by step." +
         "\n- Please write your final conclusion immediately after the '### Conclusion' section header." +
-        "\n- All numbers must be written using Arabic numerals."
         "\n- Please write only the final answer, not the reasoning process."
     )
 
     # booleanならYes or Noを追加
     if answer_type == "boolean":
         pot_prompt += "\n- Please answer with either 'Yes' or 'No' when the question can clearly be answered using one of those options."
+    if answer_type == "numerical":
+        pot_prompt += "\n- All numbers must be written using Arabic numerals."
 
     # ChatCompletion APIにリクエストを送信
     response = client.chat.completions.create(
