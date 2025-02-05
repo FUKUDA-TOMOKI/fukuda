@@ -20,13 +20,14 @@ def main(user_question: str, answer_type: str) -> str:
     pot_prompt = (
         user_question +
         "\nLet's think step by step." +
-        "\nPlease write your final conclusion immediately after the '### Conclusion' section header." +
-        "\nPlease use Arabic numerals (e.g., 1, 2, 3) when writing numbers, rather than spelling them out with alphabetic characters."
+        "\n- Please write your final conclusion immediately after the '### Conclusion' section header." +
+        "\n- Please use Arabic numerals (e.g., 1, 2, 3) when writing numbers, rather than spelling them out with alphabetic characters."
+        "\n- Please write only the final answer, not the reasoning process."
     )
 
     # booleanならYes or Noを追加
     if answer_type == "boolean":
-        pot_prompt += "\nPlease answer with either 'Yes' or 'No' when the question can clearly be answered using one of those options."
+        pot_prompt += "\n- Please answer with either 'Yes' or 'No' when the question can clearly be answered using one of those options."
 
     # ChatCompletion APIにリクエストを送信
     response = client.chat.completions.create(
