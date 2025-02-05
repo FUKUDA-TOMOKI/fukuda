@@ -21,7 +21,7 @@ def main(user_question: str, answer_type: str) -> str:
         user_question +
         "\nLet's think step by step." +
         "\n- Please write your final conclusion immediately after the '### Conclusion' section header." +
-        "\n- Please use Arabic numerals (e.g., 1, 2, 3) when writing numbers, rather than spelling them out with alphabetic characters."
+        "\n- All numbers must be written using Arabic numerals."
         "\n- Please write only the final answer, not the reasoning process."
     )
 

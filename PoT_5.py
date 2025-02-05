@@ -103,7 +103,6 @@ def step3_final_answer(question: str, knowledge_from_step1: str, reasoning_from_
 You are a capable assistant. Using the knowledge and reasoning provided below, derive the final answer.
 Summarize the information using the Pyramid Principle (Main Point, Sub Points, Supporting Data) and provide a concise final conclusion.
 Please adhere to the following formatting rules:
-- All numbers must be written using Arabic numerals.
 - Write your final conclusion immediately after the header '### Conclusion' in a bullet list or short paragraph format.
 Example format:
   ### Conclusion
@@ -145,7 +144,7 @@ def step4_extract_final_answer(question: str, full_answer: str) -> str:
     """
     prompt = f"""
 You are provided with a complete answer that includes detailed reasoning and a final conclusion.
-Extract and output only the final answer.
+Extract and output only the final answer. All numbers must be written using Arabic numerals.
 
 [Question]
 {question}

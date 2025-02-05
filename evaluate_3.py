@@ -108,7 +108,9 @@ def extract_questions_and_answers(data):
     JSON の各要素から:
       - 質問文 (question)
       - 回答データ (answer_data)
-      - 実際に用いる答え(mention)を取り出す
+      - 実際に用いる答え(mention)
+      - 複雑度 (complexityType)
+    を取り出す
     """
     extracted_data = []
     for item in data:
@@ -117,12 +119,15 @@ def extract_questions_and_answers(data):
         # 答えとして使うのは 'mention'
         answer_mention = answer_data.get("mention", "Unknown Answer")
         answer_type = answer_data.get("answerType", "Unknown Answer Type")
+        # complexityType は question と同じ階層にある
+        complexity = item.get("complexityType", "Unknown Complexity")
 
         extracted_data.append({
             "question": question,
             "answer_data": answer_data,
             "answer": answer_mention,
-            "answer_type": answer_type
+            "answer_type": answer_type,
+            "complexity": complexity
         })
     return extracted_data
 
@@ -192,12 +197,17 @@ def main():
     pot_stats = {atype: {"count": 0, "total_score": 0.0} for atype in answer_types}
     cot_stats = {atype: {"count": 0, "total_score": 0.0} for atype in answer_types}
 
+    # complexityType ごとの評価指標を保持するための辞書（動的にキーが決まる）
+    pot_complexity_stats = {}
+    cot_complexity_stats = {}
+
     # 各質問に対して回答を生成し、スコアを計算
     for idx, entry in enumerate(extract_questions_and_answers(selected_data)):
         question_text = entry["question"]
         correct_mention = entry["answer"]  # 実際の正解
         answer_type = entry["answer_type"]
-        print(f"Q{idx+1} ({answer_type}): {question_text}")
+        complexity = entry["complexity"]
+        print(f"Q{idx+1} ({answer_type}, {complexity}): {question_text}")
 
         # ユーザー回答を生成（実際はユーザー入力などを利用）
         pot_answer = pot_main(question_text, answer_type)
@@ -232,6 +242,17 @@ def main():
         else:
             cot_stats.setdefault(answer_type, {"count": 1, "total_score": cot_score})
 
+        # complexityType ごとのスコア集計
+        if complexity not in pot_complexity_stats:
+            pot_complexity_stats[complexity] = {"count": 0, "total_score": 0.0}
+        pot_complexity_stats[complexity]["count"] += 1
+        pot_complexity_stats[complexity]["total_score"] += pot_score
+
+        if complexity not in cot_complexity_stats:
+            cot_complexity_stats[complexity] = {"count": 0, "total_score": 0.0}
+        cot_complexity_stats[complexity]["count"] += 1
+        cot_complexity_stats[complexity]["total_score"] += cot_score
+
         # 現在までの平均スコアを計算して表示
         avg_pot = sum(pot_scores) / len(pot_scores)
         avg_cot = sum(cot_scores) / len(cot_scores)
@@ -257,6 +278,19 @@ def main():
         count = cot_stats[atype]["count"]
         avg_score = cot_stats[atype]["total_score"] / count if count > 0 else 0
         print(f"  {atype}: 回数 = {count}, 平均スコア = {avg_score:.2f}")
+
+    # complexityType ごとの評価指標を計算して表示
+    print("\n=== complexityType ごとの評価指標 ===")
+    print("PoT:")
+    for comp, stats in pot_complexity_stats.items():
+        count = stats["count"]
+        avg_score = stats["total_score"] / count if count > 0 else 0
+        print(f"  {comp}: 回数 = {count}, 平均スコア = {avg_score:.2f}")
+    print("CoT:")
+    for comp, stats in cot_complexity_stats.items():
+        count = stats["count"]
+        avg_score = stats["total_score"] / count if count > 0 else 0
+        print(f"  {comp}: 回数 = {count}, 平均スコア = {avg_score:.2f}")
 
 if __name__ == "__main__":
     main()
