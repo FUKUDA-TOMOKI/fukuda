@@ -141,7 +141,7 @@ def extract_final_answer(answer: str) -> str:
 
 def main():
     # ここで問題数を指定（例: 10問）
-    num_questions = 50
+    num_questions = 100
 
     # mintaka_test.jsonからデータをロード
     with open("mintaka_test.json", "r", encoding="utf-8") as f:
