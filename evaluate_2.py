@@ -41,15 +41,18 @@ def split_into_chunks(text: str, chunk_size: int) -> List[str]:
 def score_single_answer(correct_answer: str, user_answer: str) -> int:
     """
     単一型の正解文字列とユーザー回答を比較し、
-    スライドさせた部分文字列との最小レーベンシュタイン距離を返す。
+    スライドさせた部分文字列との最小レーベンシュタイン距離を正規化した値を返す。
     """
     correct_words = correct_answer.split()
     chunk_size = len(correct_words)
 
     user_chunks = split_into_chunks(user_answer, chunk_size)
+    max_dist = len(correct_answer)  # 正規化のための最大距離
+
     if not user_chunks:
         # ユーザー回答が短すぎる場合など
-        return levenshtein_distance(correct_answer, user_answer)
+        dist = levenshtein_distance(correct_answer, user_answer)
+        return 1 - min(dist, max_dist) / max_dist
 
     min_dist = float('inf')
     for chunk in user_chunks:
@@ -57,8 +60,6 @@ def score_single_answer(correct_answer: str, user_answer: str) -> int:
         if dist < min_dist:
             min_dist = dist
 
-    # min_distの最大値が1になるように正規化
-    max_dist = len(correct_answer)
     return 1 - min(min_dist, max_dist) / max_dist
 
 def score_enumerated_answers(correct_answers: List[str], user_answer: str) -> float:
