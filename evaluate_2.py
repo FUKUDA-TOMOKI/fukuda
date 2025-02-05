@@ -2,7 +2,7 @@ import re
 import json
 import random
 from typing import List
-from PoT_4 import main as pot_main
+from PoT_5 import main as pot_main
 from CoT import main as cot_main
 from Levenshtein import distance as levenshtein_distance  # 外部モジュールを利用
 
@@ -141,35 +141,64 @@ def extract_final_answer(answer: str) -> str:
         return answer
 
 def main():
-    # ここで問題数を指定（例: 100問）
-    num_questions = 100
+    # 各answer typeごとに評価する対象数を指定
+    # ※stringは件数が少ないので全問採用（8問）、その他は100問ずつ
+    sample_sizes = {
+        'entity': 100,
+        'numerical': 100,
+        'boolean': 100,
+        'date': 100,
+        'string': 8
+    }
+    answer_types = ['string', 'date', 'entity', 'boolean', 'numerical']
 
     # mintaka_test.jsonからデータをロード
     with open("mintaka_test.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    # 指定された問題数分、ランダムに（重複なく）選択
-    if num_questions > len(data):
-        num_questions = len(data)
-    selected_data = random.sample(data, num_questions)
+    # answer type ごとにデータをグループ分けする
+    grouped_data = {atype: [] for atype in answer_types}
+    for item in data:
+        atype = item.get("answer", {}).get("answerType", None)
+        if atype in grouped_data:
+            grouped_data[atype].append(item)
 
-    extracted_data = extract_questions_and_answers(selected_data)
+    # 各answer typeごとにサンプルを抽出
+    selected_data = []
+    for atype in answer_types:
+        items = grouped_data.get(atype, [])
+        if atype == 'string':
+            # stringは全件採用
+            print(f"[{atype}] の問題数: {len(items)} (全問採用)")
+            selected = items
+        else:
+            available = len(items)
+            sample_size = sample_sizes.get(atype, 100)
+            if available < sample_size:
+                print(f"[{atype}] の問題数: {available} (希望数 {sample_size}問に満たないため全件採用)")
+                selected = items
+            else:
+                print(f"[{atype}] の問題数: {available} → {sample_size}問をランダム抽出")
+                selected = random.sample(items, sample_size)
+        selected_data.extend(selected)
+
+    # 抽出された全問題数の確認
+    print(f"\n抽出された総問題数: {len(selected_data)}\n")
 
     # 全体の評価指標用
     pot_scores = []
     cot_scores = []
 
     # answerType ごとの評価指標を保持するための辞書を初期化
-    answer_types = ['string', 'date', 'entity', 'boolean', 'numerical']
     pot_stats = {atype: {"count": 0, "total_score": 0.0} for atype in answer_types}
     cot_stats = {atype: {"count": 0, "total_score": 0.0} for atype in answer_types}
 
     # 各質問に対して回答を生成し、スコアを計算
-    for idx, entry in enumerate(extracted_data):
+    for idx, entry in enumerate(extract_questions_and_answers(selected_data)):
         question_text = entry["question"]
         correct_mention = entry["answer"]  # 実際の正解
         answer_type = entry["answer_type"]
-        print(f"Q{idx+1}: {question_text}")
+        print(f"Q{idx+1} ({answer_type}): {question_text}")
 
         # ユーザー回答を生成（実際はユーザー入力などを利用）
         pot_answer = pot_main(question_text, answer_type)
