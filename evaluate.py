@@ -2,7 +2,7 @@ import re
 import json
 import random
 from typing import List
-from PoT_3 import main as pot_main
+from PoT_4 import main as pot_main
 from CoT import main as cot_main
 from Levenshtein import distance as levenshtein_distance  # 外部モジュールを利用
 
