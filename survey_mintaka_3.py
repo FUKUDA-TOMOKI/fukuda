@@ -28,11 +28,26 @@ def get_answer_types(data):
         answer_types.add(answer_type)
     return answer_types
 
+# answer_typeのそれぞれの問題数をカウントする関数
+def count_answer_types(data):
+    answer_type_count = {}
+    for item in data:
+        answer_type = item.get("answer", {}).get("answerType", "Unknown Answer Type")
+        if answer_type in answer_type_count:
+            answer_type_count[answer_type] += 1
+        else:
+            answer_type_count[answer_type] = 1
+    return answer_type_count
+
 def main():
     file_path = "mintaka_test.json"  # JSONファイルのパスを指定
     data = load_json(file_path)
     answer_type_all = get_answer_types(data)
     print(f"Answer types: {answer_type_all}")
+    answer_type_count = count_answer_types(data)
+    print(f"Answer type count:{answer_type_count}")
+
+
 
 if __name__ == "__main__":
     main()
