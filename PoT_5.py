@@ -138,14 +138,20 @@ Example format:
     logger.info(f"Response from GPT (Step 3):\n{output_text}\n\n")
     return output_text
 
-def step4_extract_final_answer(question: str, full_answer: str) -> str:
+def step4_extract_final_answer(question: str, full_answer: str, answer_type: str) -> str:
     """
     Step 4: 詳細な回答から最終回答部分のみを抽出する。
     """
+    # 基本のプロンプト
     prompt = f"""
 You are provided with a complete answer that includes detailed reasoning and a final conclusion.
-Extract and output only the final answer. All numbers must be written using Arabic numerals.
-
+Extract and output only the final answer.
+"""
+    # answer_typeが"numerical"の場合のみ、数字に関するルールを追加
+    if answer_type == "numerical":
+        prompt += "All numbers must be written using Arabic numerals.\n"
+    
+    prompt += f"""
 [Question]
 {question}
 
@@ -182,12 +188,12 @@ def main(user_question: str, answer_type: str) -> str:
     full_final_answer = step3_final_answer(user_question, knowledge, reasoning, answer_type)
 
     # Step 4: Extract only the final answer from the detailed answer
-    final_answer = step4_extract_final_answer(user_question, full_final_answer)
+    final_answer = step4_extract_final_answer(user_question, full_final_answer, answer_type)
     return final_answer
 
 if __name__ == "__main__":
     # 例: ユーザーの質問と回答タイプを指定して実行
     sample_question = "Which Republican candidate ran for president in 2008 but did not win presidential primaries?"
-    answer_type = "text"  # 必要に応じて "boolean" などに変更可能
+    answer_type = "text"  # 必要に応じて "boolean" や "numerical" に変更可能
     result = main(sample_question, answer_type)
     print(result)
