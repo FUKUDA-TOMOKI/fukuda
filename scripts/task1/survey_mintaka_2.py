@@ -49,9 +49,10 @@ def main():
         answer = item["answer"]
         enum_result = is_enumerated(item["answer_data"], question)
         result_str = "Enumerated (列挙型)" if enum_result else "Single (単一型)"
-        print(f"{i}. Question: {question}")
-        print(f"   Answer: {answer}")
-        print(f"   判定結果: {result_str}\n")
+        if enum_result:
+            print(f"{i}. Question: {question}")
+            print(f"   Answer: {answer}")
+            print(f"   判定結果: {result_str}\n")
 
 if __name__ == "__main__":
     main()

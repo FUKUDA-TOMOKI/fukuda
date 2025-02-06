@@ -76,20 +76,28 @@ def score_enumerated_answers(correct_answers: List[str], user_answer: str) -> fl
         total_score += dist
     return total_score / len(correct_answers)
 
-def is_enumerated_answer(answer_mention: str) -> bool:
+def is_enumerated(answer_data: dict, question_text: str) -> bool:
     """
-    カンマが含まれていれば列挙型とみなす。
+    回答が列挙型（複数項目）か単一型かを、回答リストの要素数のみで判定する関数。
+    回答リストが空の場合は、その問題と回答データを表示する。
+    :param answer_data: 回答のデータ。キー 'answer' にリストが入っていると想定。
+    :param question_text: 質問文のテキスト。
+    :return: 列挙型なら True、単一型なら False。
     """
-    return ',' in answer_mention
+    answers = answer_data.get("answer", [])
+    if answers is None:
+        answers = []
+    return len(answers) > 1
 
-def evaluate_answer(correct_mention: str, user_answer: str) -> float:
+def evaluate_answer(correct_mention: str, user_answer: str, answer_data: dict, question_text: str) -> float:
     """
     正解(mention文字列) と ユーザー回答 を受け取り、スコアを返す。
-      - 列挙型(カンマが含まれる場合)はカンマで分割→各要素を単一型として平均スコア
-      - 単一型はカンマを削除したうえで単一型スコアを算出
+      - 列挙型の場合は、answer_data の 'answer' リストの要素数が2以上なら判定し、
+        カンマで区切った各要素ごとに評価して平均スコアを返す。
+      - 単一型の場合は、正解とユーザー回答の正規化後に単一スコアを算出。
     """
-    if is_enumerated_answer(correct_mention):
-        # 列挙型: まず正規化後、カンマで分割
+    if is_enumerated(answer_data, question_text):
+        # 列挙型: 正規化後、カンマで区切る
         mention_normalized = normalize_text(correct_mention, remove_comma=False)
         correct_items = [x.strip() for x in mention_normalized.split(',') if x.strip()]
 
@@ -110,6 +118,7 @@ def extract_questions_and_answers(data):
       - 回答データ (answer_data)
       - 実際に用いる答え(mention)
       - 複雑度 (complexityType)
+      - 回答タイプ (answerType)
     を取り出す
     """
     extracted_data = []
@@ -216,6 +225,7 @@ def main():
     for idx, entry in enumerate(extract_questions_and_answers(selected_data)):
         question_text = entry["question"]
         correct_mention = entry["answer"]  # 実際の正解
+        answer_data = entry["answer_data"]
         answer_type = entry["answer_type"]
         complexity = entry["complexity"]
         print(f"Q{idx+1} ({answer_type}, {complexity}): {question_text}")
@@ -259,8 +269,9 @@ def main():
         print(f"  PoT word count: {pot_word_count}")
         print(f"  CoT word count: {cot_word_count}")
 
-        pot_score = evaluate_answer(correct_mention, pot_answer_final)
-        cot_score = evaluate_answer(correct_mention, cot_answer_final)
+        # 評価時に answer_data と question_text を渡すように変更
+        pot_score = evaluate_answer(correct_mention, pot_answer_final, answer_data, question_text)
+        cot_score = evaluate_answer(correct_mention, cot_answer_final, answer_data, question_text)
         print(f"  PoT score: {pot_score:.2f}")
         print(f"  CoT score: {cot_score:.2f}")
 
