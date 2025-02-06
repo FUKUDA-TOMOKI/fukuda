@@ -296,7 +296,7 @@ Extract and output only the final answer.
 
 
 ###############################################################################
-# メイン処理
+# メイン関数
 ###############################################################################
 def main(user_question: str, context: list, top_k=3, multi_steps=2) -> str:
     logger.info(f"User's question:\n{user_question}\n\n")
@@ -334,25 +334,11 @@ def main(user_question: str, context: list, top_k=3, multi_steps=2) -> str:
 ###############################################################################
 if __name__ == "__main__":
     # サンプルの質問
-    sample_question = "Which Republican candidate ran for president in 2008 but did not win presidential primaries?"
+    sample_question = "Who was born first out of Ash Lieb and Robert Frost?"
 
     # サンプルのcontext
-    sample_context = [
-        [
-          "2008 United States presidential election",
-          [
-            "The 2008 United States presidential election was the 56th quadrennial presidential election, held on Tuesday, November 4, 2008.",
-            "Republican candidate John McCain ran for president in 2008 but did not win the presidential primaries."
-          ]
-        ],
-        [
-          "Sample Title",
-          [
-            "Sample text that might be irrelevant to the question.",
-            "Another random sentence for demonstration."
-          ]
-        ]
-    ]
+    sample_context = [['Robert Frost House', ['The Robert Frost House is an historic house at 29-35 Brewster Street in Cambridge, Massachusetts.', ' It consists of four wood-frame townhouses, 2-1/2 stories in height, arranged in mirror image styling.', ' Each pair of units has a porch providing access to those units, supported by turned posts and with a low Stick style balustrade.', ' The Queen Anne/Stick style frame house was built in 1884, and has gables decorated with a modest amount of Gothic-style bargeboard.', ' The house was home to poet Robert Frost for the last two decades of his life.']], ['Birches (poem)', ['"Birches" is a poem by American poet Robert Frost(1874-1963).', ' It was collected in Frost\'s third collection of poetry "Mountain Interval" that was published in 1916.', " Consisting of 59 lines, it is one of Robert Frost's most anthologized poems.", ' The poem "Birches", along with other poems that deal with rural landscape and wildlife, shows Frost as a nature poet.']], ['Ash Lieb', ['Ash Lieb (born 22 August 1982) is an Australian artist, writer and comedian, known for his surreal humour and art.', ' Born in Ballarat, Ash Lieb began exhibiting art at eight years of age, and at the age of fifteen, wrote his first novel, "The Secret Well".', ' Throughout his career, Lieb has created a diverse range of artworks, books, short films, and comedic performances, which have often possessed philosophical or psychiatric undertones.']], ['Robert Frost Farm (Derry, New Hampshire)', ['The Robert Frost Farm in Derry, New Hampshire is a two-story, clapboard, connected farm built in 1884.', ' It was the home of poet Robert Frost from 1900 to 1911.', ' Today it is a New Hampshire state park in use as a historic house museum.', ' The property is listed in the National Register of Historic Places as the Robert Frost Homestead.']], ['Robert Frost', ['Robert Lee Frost (March26, 1874January29, 1963) was an American poet.', ' His work was initially published in England before it was published in America.', ' He is highly regarded for his realistic depictions of rural life and his command of American colloquial speech.', ' His work frequently employed settings from rural life in New England in the early twentieth century, using them to examine complex social and philosophical themes.', ' One of the most popular and critically respected American poets of the twentieth century, Frost was honored frequently during his lifetime, receiving four Pulitzer Prizes for Poetry.', ' He became one of America\'s rare "public literary figures, almost an artistic institution."', ' He was awarded the Congressional Gold Medal in 1960 for his poetic works.', ' On July 22, 1961, Frost was named poet laureate of Vermont.']], ['A Masque of Reason', ['A Masque of Reason is a 1945 comedy written by Robert Frost.', ' This short play purports to be the chapter 43 of the book of Job, which only has 42 chapters.', " Thus, Frost has written a concluding chapter in the form of the play.In this play, Robert Frost like John Milton in Paradise Lost ,wants to justify God's ways to man.", ' This play is not of high quality because of the use of slang language and his shallow view of divine nature and human nature.The image of Steeple Bush is apparent in describing the tree.']], ['Robert Frost Farm (Ripton, Vermont)', ['The Robert Frost Farm, also known as the Homer Noble Farm, is a National Historic Landmark in Ripton, Vermont.', ' It is a 150 acre farm property off Vermont Route 125 in the Green Mountains where American poet Robert Frost (1874-1963) lived and wrote in the summer and fall months from 1939 until his death in 1963.', ' The property, historically called the Homer Noble Farm, includes a nineteenth-century farmhouse and a rustic wooden writing cabin (where Frost often stayed).', ' The property is now owned by Middlebury College.', ' The grounds are open to the public during daylight hours.']], ['Robert Frost Farm (South Shaftsbury, Vermont)', ['The Robert Frost Farm, also known as "The Gully", is a historic farm property on Buck Hill Road in South Shaftsbury, Vermont.', ' The 1790 farmstead was purchased in 1929 by poet Robert Frost, and served as his primary residence until 1938.', ' During this period of residency, Frost was awarded two Pulitzer Prizes for his poetry.', ' The property was designated a National Historic Landmark and listed on the National Register of Historic Places in 1968; its landmark designation was withdrawn in 1986 after its private owners made alterations that destroyed important historic elements of the property.']], ['Which Way, Robert Frost?', ['"Which Way, Robert Frost" is a song written by Roxanne Seeman and Philipp Steinke.', " It was recorded by Jacky Cheung in Cantonese for Cheung's Private Corner album, released on January 29, 2010 by Universal Music.", ' "Which Way, Robert Frost?"', ' was recorded again by Paolo Onesa on his Pop Goes Standards album, released February 17, 2014 by MCA Music, in The Philippines.']], ['Steeple Bush', ["This is one of Robert Frost's smaller collections.", ' This poetic collection was published in New York Times  on June 1st, 1947.', "It is dedicated to Frost's six grandchildren.", ' There is tenderness and passive sadness in this volume.', " In this collection, with 'Spiritual Themes' ,Robert Frost  portrays religion in an ambiguous way."]]]
+
 
     # 上位3件だけを利用して回答を生成
     result = main(sample_question, sample_context, top_k=3, multi_steps=1)
