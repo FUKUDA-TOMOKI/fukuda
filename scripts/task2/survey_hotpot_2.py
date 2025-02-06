@@ -1,24 +1,18 @@
 import json
-
-def output_first_hard_problem(problems):
-    """
-    問題リストから 'level' が 'hard' である最初の問題を出力する
-    """
-    for problem in problems:
-        if problem.get('level') == 'easy':
-            # 整形して出力するために JSON 形式で表示
-            print(json.dumps(problem, indent=2, ensure_ascii=False))
-            return  # 最初の一件のみ出力するのでループを終了
-
-    print("Hard level の問題は見つかりませんでした。")
+import random
 
 def main():
     # JSONファイルを読み込みます
     with open('data/hotpot_train_v1.1.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     
-    # 読み込んだデータから hard レベルの最初の問題を出力します
-    output_first_hard_problem(data)
+    # データ数が100件未満の場合は全件、100件以上の場合はランダムに100件選択
+    sample_size = min(100, len(data))
+    sample_data = random.sample(data, sample_size)
+    
+    # 選んだ各データのanswer属性を表示します
+    for item in sample_data:
+        print(item.get("answer"))
 
 if __name__ == '__main__':
     main()
