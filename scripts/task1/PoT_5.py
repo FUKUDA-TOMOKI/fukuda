@@ -6,10 +6,10 @@ from datetime import datetime
 
 # ログの設定（ファイル名には実行時の時刻を付与）
 logging.basicConfig(
-    filename=f'logs/pot_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log',  # ログファイル名
-    filemode='a',                   # 'a'は追記モード（既存のログに追記する）
+    filename=f'logs/pot_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log',
+    filemode='a',
     format='%(asctime)s - %(levelname)s - %(message)s',
-    level=logging.INFO              # INFOレベル以上をログに記録
+    level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ MODEL = "gpt-4o-mini"
 
 def step1_knowledge_retrieval(question: str) -> str:
     """
-    Step 1: ユーザーの質問に関連する知識をMECE原則に基づいて収集する。
+    Step 1: ユーザーの質問に関連する知識をMECE原則に基づいて収集する
     """
     prompt = f"""
 You are a capable assistant. Your task is to collect key knowledge relevant to the following question using the MECE (Mutually Exclusive and Collectively Exhaustive) principle.
@@ -58,8 +58,7 @@ Do not provide any conclusions or in-depth reasoning at this stage.
 
 def step2_reasoning(question: str, knowledge_from_step1: str) -> str:
     """
-    Step 2: Step 1の知識をもとに論理的推論を行う。
-    ピラミッド原則（Main Point, Sub Points, Supporting Data）とChain of Thought（CoT）を用いて論理の展開過程を明示する。
+    Step 2: Step 1の知識をもとに論理的推論を行う
     """
     prompt = f"""
 You are a capable assistant. Based on the knowledge provided below, perform logical reasoning for the given question.
@@ -197,6 +196,6 @@ def main(user_question: str, answer_type: str) -> str:
 if __name__ == "__main__":
     # 例: ユーザーの質問と回答タイプを指定して実行
     sample_question = "Which Republican candidate ran for president in 2008 but did not win presidential primaries?"
-    answer_type = "text"  # 必要に応じて "boolean" や "numerical" に変更可能
+    answer_type = "entity"
     result = main(sample_question, answer_type)
     print(result)
