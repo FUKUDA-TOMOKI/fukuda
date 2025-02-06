@@ -108,15 +108,15 @@ def extract_questions_and_answers(data):
 
 def main():
     # ファイルからデータをロード
-    with open("data/mintaka_test.json", "r", encoding="utf-8") as f:
+    with open("data/hotpot_train_v1.1.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 
     # data がリスト形式でない場合はリストに変換
     if isinstance(data, dict):
         data = [data]
 
-    # 今回は answer_type 属性は使用せず、全件採用する
-    selected_data = data
+    # 今回は answer_type 属性は使用せず、ランダムに選んだ10件のデータを抽出
+    selected_data = random.sample(data, min(100, len(data)))
     print(f"\n抽出された総問題数: {len(selected_data)}\n")
 
     # 全体の評価指標用
