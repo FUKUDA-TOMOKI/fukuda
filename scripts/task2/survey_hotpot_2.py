@@ -5,7 +5,7 @@ def output_first_hard_problem(problems):
     問題リストから 'level' が 'hard' である最初の問題を出力する
     """
     for problem in problems:
-        if problem.get('level') == 'hard':
+        if problem.get('level') == 'easy':
             # 整形して出力するために JSON 形式で表示
             print(json.dumps(problem, indent=2, ensure_ascii=False))
             return  # 最初の一件のみ出力するのでループを終了
