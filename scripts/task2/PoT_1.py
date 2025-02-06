@@ -125,7 +125,7 @@ Do not provide the final conclusion at this stage; focus solely on outlining the
     logger.info(f"Response from GPT (Step 2):\n{output_text}\n\n")
     return output_text
 
-def step3_final_answer(question: str, knowledge_from_step1: str, reasoning_from_step2: str, answer_type: str) -> str:
+def step3_final_answer(question: str, knowledge_from_step1: str, reasoning_from_step2: str) -> str:
     """
     Step 3: Step 1とStep 2の結果を統合して最終回答を導く。
     """
@@ -147,9 +147,6 @@ Example format:
 [Reasoning from Step 2]
 {reasoning_from_step2}
 """
-    if answer_type == "boolean":
-        prompt += "\nFor a boolean question, please answer with either 'Yes' or 'No' along with a brief supporting reason."
-
     # ログにプロンプトを出力
     logger.info("=== Step 3: Final Answer ===")
     logger.info(f"Prompt to GPT:\n{prompt}\n\n")
@@ -167,20 +164,14 @@ Example format:
     logger.info(f"Response from GPT (Step 3):\n{output_text}\n\n")
     return output_text
 
-def step4_extract_final_answer(question: str, full_answer: str, answer_type: str) -> str:
+def step4_extract_final_answer(question: str, full_answer: str) -> str:
     """
     Step 4: 詳細な回答から最終回答部分のみを抽出する。
     """
-    # 基本のプロンプト
     prompt = f"""
 You are provided with a complete answer that includes detailed reasoning and a final conclusion.
 Extract and output only the final answer.
-"""
-    # answer_typeが"numerical"の場合のみ、数字に関するルールを追加
-    if answer_type == "numerical":
-        prompt += "All numbers must be written using Arabic numerals.\n"
-    
-    prompt += f"""
+
 [Question]
 {question}
 
@@ -204,7 +195,7 @@ Extract and output only the final answer.
     logger.info(f"Response from GPT (Step 4):\n{output_text}\n\n")
     return output_text
 
-def main(user_question: str, context: list, answer_type: str) -> str:
+def main(user_question: str, context: list) -> str:
     logger.info(f"User's question:\n{user_question}\n\n")
     logger.info(f"Context provided:\n{context}\n\n")
 
@@ -215,16 +206,15 @@ def main(user_question: str, context: list, answer_type: str) -> str:
     reasoning = step2_reasoning(user_question, knowledge)
 
     # Step 3: Final answer (detailed, including reasoning)
-    full_final_answer = step3_final_answer(user_question, knowledge, reasoning, answer_type)
+    full_final_answer = step3_final_answer(user_question, knowledge, reasoning)
 
     # Step 4: Extract only the final answer from the detailed answer
-    final_answer = step4_extract_final_answer(user_question, full_final_answer, answer_type)
+    final_answer = step4_extract_final_answer(user_question, full_final_answer)
     return final_answer
 
 if __name__ == "__main__":
-    # 例: ユーザーの質問と回答タイプ、及びcontext情報を指定して実行
+    # 例: ユーザーの質問とcontext情報を指定して実行
     sample_question = "Which Republican candidate ran for president in 2008 but did not win presidential primaries?"
-    answer_type = "text"  # 必要に応じて "boolean" や "numerical" に変更可能
 
     # context情報の例
     sample_context = [
@@ -237,5 +227,5 @@ if __name__ == "__main__":
         ]
     ]
     
-    result = main(sample_question, sample_context, answer_type)
+    result = main(sample_question, sample_context)
     print(result)
