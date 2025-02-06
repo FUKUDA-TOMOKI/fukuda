@@ -38,7 +38,7 @@ def split_into_chunks(text: str, chunk_size: int) -> List[str]:
         chunks.append(chunk)
     return chunks
 
-def score_single_answer(correct_answer: str, user_answer: str) -> int:
+def score_single_answer(correct_answer: str, user_answer: str) -> float:
     """
     単一型の正解文字列とユーザー回答を比較し、
     スライドさせた部分文字列との最小レーベンシュタイン距離を正規化した値を返す。
@@ -62,46 +62,14 @@ def score_single_answer(correct_answer: str, user_answer: str) -> int:
 
     return 1 - min(min_dist, max_dist) / max_dist
 
-def score_enumerated_answers(correct_answers: List[str], user_answer: str) -> float:
-    """
-    列挙型の正解（複数の正解要素）それぞれについて score_single_answer を計算し、
-    その平均値を返す。
-    """
-    if not correct_answers:
-        return 0.0
-
-    total_score = 0
-    for ans in correct_answers:
-        dist = score_single_answer(ans, user_answer)
-        total_score += dist
-    return total_score / len(correct_answers)
-
-def is_enumerated_answer(answer_mention: str) -> bool:
-    """
-    カンマが含まれていれば列挙型とみなす。
-    """
-    return ',' in answer_mention
-
 def evaluate_answer(correct_mention: str, user_answer: str) -> float:
     """
     正解(mention文字列) と ユーザー回答 を受け取り、スコアを返す。
-      - 列挙型(カンマが含まれる場合)はカンマで分割→各要素を単一型として平均スコア
-      - 単一型はカンマを削除したうえで単一型スコアを算出
+    すべて単一型の回答として扱う。
     """
-    if is_enumerated_answer(correct_mention):
-        # 列挙型: まず正規化後、カンマで分割
-        mention_normalized = normalize_text(correct_mention, remove_comma=False)
-        correct_items = [x.strip() for x in mention_normalized.split(',') if x.strip()]
-
-        # ユーザー回答はカンマを除去して単一比較形式に正規化
-        user_answer_normalized = normalize_text(user_answer, remove_comma=True)
-
-        return score_enumerated_answers(correct_items, user_answer_normalized)
-    else:
-        # 単一型: カンマを削除して正規化
-        correct_answer = normalize_text(correct_mention, remove_comma=True)
-        user_answer_normalized = normalize_text(user_answer, remove_comma=True)
-        return score_single_answer(correct_answer, user_answer_normalized)
+    correct_answer = normalize_text(correct_mention, remove_comma=True)
+    user_answer_normalized = normalize_text(user_answer, remove_comma=True)
+    return score_single_answer(correct_answer, user_answer_normalized)
 
 def extract_questions_and_answers(data):
     """
@@ -176,12 +144,8 @@ def main():
         print(f"Q{idx+1} ({level}): {question_text}")
 
         # ユーザー回答を生成（実際はユーザー入力などを利用）
-        pot_answer = pot_main(question_text, context)
-        cot_answer = cot_main(question_text, context)
-
-        # 「### Conclusion」以降の部分のみを抽出
-        pot_answer_final = pot_answer
-        cot_answer_final = cot_answer
+        pot_answer_final = pot_main(question_text, context)
+        cot_answer_final = cot_main(question_text, context)
 
         # 単語数をカウント（英語の回答であることを前提とする）
         pot_word_count = len(pot_answer_final.split())
