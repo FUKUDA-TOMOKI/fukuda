@@ -150,6 +150,9 @@ Extract and output only the final answer.
     # answer_typeが"numerical"の場合のみ、数字に関するルールを追加
     if answer_type == "numerical":
         prompt += "All numbers must be written using Arabic numerals.\n"
+
+    if answer_type == "boolean":
+        prompt += "\nFor a boolean question, please answer with either 'Yes' or 'No'."
     
     prompt += f"""
 [Question]
