@@ -1,6 +1,6 @@
 import os
 import logging
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
 from datetime import datetime
 import json
@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 # .envファイルの読み込み (API_KEY 等を取得)
 load_dotenv()
 
-# OpenAI APIキー
+# 環境変数から APIキー を取得し、OpenAI クライアントの初期化
 API_KEY = os.getenv("API_KEY")
-openai.api_key = API_KEY
+client = OpenAI(api_key=API_KEY)
 
 # GPT-4相当のモデル (ChatCompletion用)
 MODEL_CHAT = "gpt-4o-mini"
@@ -39,14 +39,14 @@ def get_embedding(text: str, model: str = MODEL_EMBEDDING) -> np.ndarray:
     # 改行などを置き換え
     clean_text = text.replace("\n", " ")
     
-    # encoding_format="float" を指定すると、embeddingが浮動小数点配列として返ってくる
-    # Python用openaiライブラリでは返り値はdata[].embeddingにfloatのリストとして含まれる
-    response = openai.Embedding.create(
+    # client.embeddings.create() を用いてEmbeddings APIを呼び出す
+    response = client.embeddings.create(
         model=model,
         input=clean_text,
         encoding_format="float"
     )
-    emb_list = response["data"][0]["embedding"]
+    # 新しいAPIの返り値はオブジェクトとなっているので、属性経由でアクセスする
+    emb_list = response.data[0].embedding
     # numpy配列(float32)に変換
     emb_array = np.array(emb_list, dtype=np.float32)
     return emb_array
@@ -183,7 +183,7 @@ Do not provide any conclusions or in-depth reasoning at this stage.
     logger.info("=== Step 1: Knowledge Retrieval ===")
     logger.info(f"Prompt to GPT:\n{prompt}\n\n")
 
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model=MODEL_CHAT,
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
@@ -219,7 +219,7 @@ Do not provide the final conclusion at this stage; focus solely on outlining the
     logger.info("=== Step 2: Reasoning and Organization ===")
     logger.info(f"Prompt to GPT:\n{prompt}\n\n")
 
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model=MODEL_CHAT,
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
@@ -255,7 +255,7 @@ Example format:
     logger.info("=== Step 3: Final Answer ===")
     logger.info(f"Prompt to GPT:\n{prompt}\n\n")
 
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model=MODEL_CHAT,
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
@@ -283,7 +283,7 @@ Extract and output only the final answer.
     logger.info("=== Step 4: Final Answer Extraction ===")
     logger.info(f"Prompt to GPT:\n{prompt}\n\n")
 
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model=MODEL_CHAT,
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
@@ -298,7 +298,7 @@ Extract and output only the final answer.
 ###############################################################################
 # メイン処理
 ###############################################################################
-def main(user_question: str, context: list, top_k=3, multi_steps=1) -> str:
+def main(user_question: str, context: list, top_k=3, multi_steps=2) -> str:
     logger.info(f"User's question:\n{user_question}\n\n")
     logger.info(f"Context (raw):\n{context}\n\n")
 
