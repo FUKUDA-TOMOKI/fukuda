@@ -3,6 +3,7 @@ import logging
 from dotenv import load_dotenv
 from openai import OpenAI
 from datetime import datetime
+import json
 
 # ログの設定（ファイル名には実行時の時刻を付与）
 logging.basicConfig(
@@ -23,21 +24,50 @@ API_KEY = os.getenv("API_KEY")
 client = OpenAI(api_key=API_KEY)
 MODEL = "gpt-4o-mini"
 
-def step1_knowledge_retrieval(question: str) -> str:
+def step1_knowledge_retrieval(question: str, context: list) -> str:
     """
     Step 1: ユーザーの質問に関連する知識をMECE原則に基づいて収集する。
+    ・明示的に与えられた情報（context）を利用する。
+    ・contextは、以下のような形式で与えられる:
+    
+    [
+        [
+          "タイトル1",
+          [
+            "説明文1",
+            "説明文2",
+            ...
+          ]
+        ],
+        [
+          "タイトル2",
+          [
+            "説明文1",
+            "説明文2",
+            ...
+          ]
+        ],
+        ...
+    ]
     """
+    # context情報を整形して文字列に変換（JSON形式で見やすくする）
+    context_str = json.dumps(context, ensure_ascii=False, indent=2)
+    
     prompt = f"""
 You are a capable assistant. Your task is to collect key knowledge relevant to the following question using the MECE (Mutually Exclusive and Collectively Exhaustive) principle.
-Please output the information in the following bullet list format and limit your response to 5-7 key points:
+In this step, you are explicitly provided with information via the "context" section below.
+Please output the information in the following bullet list format and limit your response to key points:
 - **Category Name**:
-  - **Item 1**: Explanation including specific numbers or proper nouns (include reference such as URL or literature).
-  - **Item 2**: Explanation (include reference).
+  - **Item 1**: Explanation including specific numbers or proper nouns.
+  - **Item 2**: Explanation.
 - **Category Name 2**: ...
 Do not provide any conclusions or in-depth reasoning at this stage.
 
 [Question]
 {question}
+
+[Context Provided]
+{context_str}
 """
     # ログにプロンプトを出力
     logger.info("=== Step 1: Knowledge Retrieval ===")
@@ -103,7 +133,6 @@ def step3_final_answer(question: str, knowledge_from_step1: str, reasoning_from_
 You are a capable assistant. Using the knowledge and reasoning provided below, derive the final answer.
 Summarize the information using the Pyramid Principle (Main Point, Sub Points, Supporting Data) and provide a concise final conclusion.
 Please adhere to the following formatting rules:
-- Write your final conclusion immediately after the header '### Conclusion' in a bullet list or short paragraph format.
 Example format:
   ### Conclusion
   1. [Your final answer with key reasons]
@@ -175,11 +204,12 @@ Extract and output only the final answer.
     logger.info(f"Response from GPT (Step 4):\n{output_text}\n\n")
     return output_text
 
-def main(user_question: str, answer_type: str) -> str:
+def main(user_question: str, context: list, answer_type: str) -> str:
     logger.info(f"User's question:\n{user_question}\n\n")
+    logger.info(f"Context provided:\n{context}\n\n")
 
-    # Step 1: Knowledge retrieval
-    knowledge = step1_knowledge_retrieval(user_question)
+    # Step 1: Knowledge retrieval (context情報を利用)
+    knowledge = step1_knowledge_retrieval(user_question, context)
 
     # Step 2: Reasoning and organization
     reasoning = step2_reasoning(user_question, knowledge)
@@ -192,8 +222,20 @@ def main(user_question: str, answer_type: str) -> str:
     return final_answer
 
 if __name__ == "__main__":
-    # 例: ユーザーの質問と回答タイプを指定して実行
+    # 例: ユーザーの質問と回答タイプ、及びcontext情報を指定して実行
     sample_question = "Which Republican candidate ran for president in 2008 but did not win presidential primaries?"
     answer_type = "text"  # 必要に応じて "boolean" や "numerical" に変更可能
-    result = main(sample_question, answer_type)
+
+    # context情報の例
+    sample_context = [
+        [
+          "2008 United States presidential election",
+          [
+            "The 2008 United States presidential election was the 56th quadrennial presidential election, held on Tuesday, November 4, 2008.",
+            "Republican candidate John McCain ran for president in 2008 but did not win the presidential primaries."
+          ]
+        ]
+    ]
+    
+    result = main(sample_question, sample_context, answer_type)
     print(result)
