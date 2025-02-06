@@ -146,7 +146,7 @@ def extract_final_answer(answer: str) -> str:
 
 def main():
     # 各answer typeごとに評価する対象数を指定
-    # ※stringは件数が少ないので全問採用（8問）、その他は100問ずつ
+    # ※stringは件数が少ないので全問採用（8問）、その他は50問ずつ
     sample_sizes = {
         'entity': 50,
         'numerical': 50,
@@ -172,7 +172,6 @@ def main():
     for atype in answer_types:
         items = grouped_data.get(atype, [])
         if atype == 'string':
-            # stringは全件採用
             print(f"[{atype}] の問題数: {len(items)} (全問採用)")
             selected = items
         else:
@@ -193,13 +192,25 @@ def main():
     pot_scores = []
     cot_scores = []
 
+    # 単語数カウント用のリスト
+    pot_word_counts = []
+    cot_word_counts = []
+
     # answerType ごとの評価指標を保持するための辞書を初期化
     pot_stats = {atype: {"count": 0, "total_score": 0.0} for atype in answer_types}
     cot_stats = {atype: {"count": 0, "total_score": 0.0} for atype in answer_types}
 
+    # answerType ごとの単語数集計用辞書
+    pot_words_by_type = {atype: {"count": 0, "total_words": 0} for atype in answer_types}
+    cot_words_by_type = {atype: {"count": 0, "total_words": 0} for atype in answer_types}
+
     # complexityType ごとの評価指標を保持するための辞書（動的にキーが決まる）
     pot_complexity_stats = {}
     cot_complexity_stats = {}
+
+    # complexityType ごとの単語数集計用辞書
+    pot_words_by_complexity = {}
+    cot_words_by_complexity = {}
 
     # 各質問に対して回答を生成し、スコアを計算
     for idx, entry in enumerate(extract_questions_and_answers(selected_data)):
@@ -217,9 +228,36 @@ def main():
         pot_answer_final = extract_final_answer(pot_answer)
         cot_answer_final = extract_final_answer(cot_answer)
 
+        # 単語数をカウント（英語の回答であることを前提とする）
+        pot_word_count = len(pot_answer_final.split())
+        cot_word_count = len(cot_answer_final.split())
+        pot_word_counts.append(pot_word_count)
+        cot_word_counts.append(cot_word_count)
+
+        # answerTypeごとの単語数集計更新
+        if answer_type in pot_words_by_type:
+            pot_words_by_type[answer_type]["count"] += 1
+            pot_words_by_type[answer_type]["total_words"] += pot_word_count
+        if answer_type in cot_words_by_type:
+            cot_words_by_type[answer_type]["count"] += 1
+            cot_words_by_type[answer_type]["total_words"] += cot_word_count
+
+        # complexityType ごとの単語数集計更新
+        if complexity not in pot_words_by_complexity:
+            pot_words_by_complexity[complexity] = {"count": 0, "total_words": 0}
+        pot_words_by_complexity[complexity]["count"] += 1
+        pot_words_by_complexity[complexity]["total_words"] += pot_word_count
+
+        if complexity not in cot_words_by_complexity:
+            cot_words_by_complexity[complexity] = {"count": 0, "total_words": 0}
+        cot_words_by_complexity[complexity]["count"] += 1
+        cot_words_by_complexity[complexity]["total_words"] += cot_word_count
+
         print(f"  Correct mention: {correct_mention}")
         print(f"  PoT answer (final): {pot_answer_final}")
         print(f"  CoT answer (final): {cot_answer_final}")
+        print(f"  PoT word count: {pot_word_count}")
+        print(f"  CoT word count: {cot_word_count}")
 
         pot_score = evaluate_answer(correct_mention, pot_answer_final)
         cot_score = evaluate_answer(correct_mention, cot_answer_final)
@@ -266,18 +304,30 @@ def main():
     print(f"PoT 全体平均スコア: {overall_pot:.2f}")
     print(f"CoT 全体平均スコア: {overall_cot:.2f}\n")
 
+    # 単語数の平均値計算（全体）
+    overall_pot_words = sum(pot_word_counts) / len(pot_word_counts) if pot_word_counts else 0
+    overall_cot_words = sum(cot_word_counts) / len(cot_word_counts) if cot_word_counts else 0
+    print("=== 単語数の平均値（全体） ===")
+    print(f"PoT 回答の平均単語数: {overall_pot_words:.2f}")
+    print(f"CoT 回答の平均単語数: {overall_cot_words:.2f}\n")
+
     # answerType ごとの評価指標を計算して表示
     print("=== answerType ごとの評価指標 ===")
     print("PoT:")
     for atype in answer_types:
         count = pot_stats[atype]["count"]
         avg_score = pot_stats[atype]["total_score"] / count if count > 0 else 0
-        print(f"  {atype}: 回数 = {count}, 平均スコア = {avg_score:.2f}")
+        # 単語数の平均値も計算
+        word_stats = pot_words_by_type.get(atype, {"count": 0, "total_words": 0})
+        avg_words = word_stats["total_words"] / word_stats["count"] if word_stats["count"] > 0 else 0
+        print(f"  {atype}: 回数 = {count}, 平均スコア = {avg_score:.2f}, 平均単語数 = {avg_words:.2f}")
     print("CoT:")
     for atype in answer_types:
         count = cot_stats[atype]["count"]
         avg_score = cot_stats[atype]["total_score"] / count if count > 0 else 0
-        print(f"  {atype}: 回数 = {count}, 平均スコア = {avg_score:.2f}")
+        word_stats = cot_words_by_type.get(atype, {"count": 0, "total_words": 0})
+        avg_words = word_stats["total_words"] / word_stats["count"] if word_stats["count"] > 0 else 0
+        print(f"  {atype}: 回数 = {count}, 平均スコア = {avg_score:.2f}, 平均単語数 = {avg_words:.2f}")
 
     # complexityType ごとの評価指標を計算して表示
     print("\n=== complexityType ごとの評価指標 ===")
@@ -285,12 +335,16 @@ def main():
     for comp, stats in pot_complexity_stats.items():
         count = stats["count"]
         avg_score = stats["total_score"] / count if count > 0 else 0
-        print(f"  {comp}: 回数 = {count}, 平均スコア = {avg_score:.2f}")
+        word_stats = pot_words_by_complexity.get(comp, {"count": 0, "total_words": 0})
+        avg_words = word_stats["total_words"] / word_stats["count"] if word_stats["count"] > 0 else 0
+        print(f"  {comp}: 回数 = {count}, 平均スコア = {avg_score:.2f}, 平均単語数 = {avg_words:.2f}")
     print("CoT:")
     for comp, stats in cot_complexity_stats.items():
         count = stats["count"]
         avg_score = stats["total_score"] / count if count > 0 else 0
-        print(f"  {comp}: 回数 = {count}, 平均スコア = {avg_score:.2f}")
+        word_stats = cot_words_by_complexity.get(comp, {"count": 0, "total_words": 0})
+        avg_words = word_stats["total_words"] / word_stats["count"] if word_stats["count"] > 0 else 0
+        print(f"  {comp}: 回数 = {count}, 平均スコア = {avg_score:.2f}, 平均単語数 = {avg_words:.2f}")
 
 if __name__ == "__main__":
     main()
