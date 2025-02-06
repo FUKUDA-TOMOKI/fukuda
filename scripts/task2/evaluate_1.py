@@ -200,8 +200,8 @@ def main():
     print("=== 全体の評価指標 ===")
     overall_pot = sum(pot_scores) / len(pot_scores) if pot_scores else 0
     overall_cot = sum(cot_scores) / len(cot_scores) if cot_scores else 0
-    print(f"PoT 全体平均スコア: {overall_pot:.2f}")
-    print(f"CoT 全体平均スコア: {overall_cot:.2f}\n")
+    print(f"PoT 全体平均スコア: {overall_pot:.3f}")
+    print(f"CoT 全体平均スコア: {overall_cot:.3f}\n")
 
     # 単語数の平均値計算（全体）
     overall_pot_words = sum(pot_word_counts) / len(pot_word_counts) if pot_word_counts else 0
@@ -218,14 +218,14 @@ def main():
         avg_score = stats["total_score"] / count if count > 0 else 0
         word_stats = pot_words_by_level.get(lvl, {"count": 0, "total_words": 0})
         avg_words = word_stats["total_words"] / word_stats["count"] if word_stats["count"] > 0 else 0
-        print(f"  {lvl}: 回数 = {count}, 平均スコア = {avg_score:.2f}, 平均単語数 = {avg_words:.2f}")
+        print(f"  {lvl}: 回数 = {count}, 平均スコア = {avg_score:.3f}, 平均単語数 = {avg_words:.2f}")
     print("CoT:")
     for lvl, stats in cot_level_stats.items():
         count = stats["count"]
         avg_score = stats["total_score"] / count if count > 0 else 0
         word_stats = cot_words_by_level.get(lvl, {"count": 0, "total_words": 0})
         avg_words = word_stats["total_words"] / word_stats["count"] if word_stats["count"] > 0 else 0
-        print(f"  {lvl}: 回数 = {count}, 平均スコア = {avg_score:.2f}, 平均単語数 = {avg_words:.2f}")
+        print(f"  {lvl}: 回数 = {count}, 平均スコア = {avg_score:.3f}, 平均単語数 = {avg_words:.2f}")
 
 if __name__ == "__main__":
     main()
