@@ -138,19 +138,6 @@ def extract_questions_and_answers(data):
         })
     return extracted_data
 
-def extract_final_answer(answer: str) -> str:
-    """
-    回答文から「### Conclusion」という文字列以降の部分のみを抽出する。
-    見つからなかった場合は、元の回答を返す。
-    """
-    marker = "### Conclusion"
-    index = answer.find(marker)
-    if index != -1:
-        # marker の後ろの部分を返す (marker 自体は含まない)
-        return answer[index + len(marker):].strip()
-    else:
-        return answer
-
 def main():
     # ファイルからデータをロード
     with open("data/mintaka_test.json", "r", encoding="utf-8") as f:
@@ -193,8 +180,8 @@ def main():
         cot_answer = cot_main(question_text, context)
 
         # 「### Conclusion」以降の部分のみを抽出
-        pot_answer_final = extract_final_answer(pot_answer)
-        cot_answer_final = extract_final_answer(cot_answer)
+        pot_answer_final = pot_answer
+        cot_answer_final = cot_answer
 
         # 単語数をカウント（英語の回答であることを前提とする）
         pot_word_count = len(pot_answer_final.split())
