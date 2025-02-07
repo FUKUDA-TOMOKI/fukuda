@@ -29,11 +29,11 @@ def step1_knowledge_retrieval(question: str) -> str:
     """
     prompt = f"""
 You are a capable assistant. Your task is to collect key knowledge relevant to the following question using the MECE (Mutually Exclusive and Collectively Exhaustive) principle.
-Please output the information in the following bullet list format and limit your response to 5-7 key points:
-- **Category Name**:
-  - **Item 1**: Explanation including specific numbers or proper nouns (include reference such as URL or literature).
-  - **Item 2**: Explanation (include reference).
-- **Category Name 2**: ...
+Please output the information in the following bullet list format and limit your response to 5-7 key points.
+- Category Name:
+  - Item 1: Explanation including specific numbers or proper nouns (include reference such as URL or literature).
+  - Item 2: Explanation (include reference).
+- Category Name 2: ...
 Do not provide any conclusions or in-depth reasoning at this stage.
 
 [Question]

@@ -3,7 +3,7 @@ import json
 import random
 from typing import List
 from PoT_2 import main as pot_main
-from CoT import main as cot_main
+from CoT_2 import main as cot_main
 from Levenshtein import distance as levenshtein_distance  # 外部モジュールを利用
 
 def normalize_text(text: str, remove_comma: bool = False) -> str:
