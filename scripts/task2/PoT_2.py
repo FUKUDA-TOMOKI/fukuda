@@ -77,7 +77,7 @@ def build_faiss_index(context):
 ###############################################################################
 # FAISSからのトップk件検索
 ###############################################################################
-def retrieve_top_k(question, index, meta, k=3):
+def retrieve_top_k(question, index, meta, k):
     """
     質問に対して類似度が高い上位 k 件を FAISS から返す。
     結果は [ [title, [sentence1, ...]], ... ] の形式でまとめる。
@@ -129,7 +129,7 @@ def unify_contexts(*contexts):
 ###############################################################################
 # 多段推論の例
 ###############################################################################
-def multi_step_context_retrieval(question, context, steps=2, top_k=3):
+def multi_step_context_retrieval(question, context, steps=3, top_k=4):
     """
     多段推論:
       1. コンテキストを細分化し、FAISSでIndex作成
@@ -302,7 +302,7 @@ Extract and output only the final answer.
 ###############################################################################
 # メイン関数
 ###############################################################################
-def main(user_question: str, context: list, top_k=3, multi_steps=2) -> str:
+def main(user_question: str, context: list, top_k=4, multi_steps=3) -> str:
     """
     user_question: ユーザーからの質問
     context:       [[title, [sentence1, ...]], [title2, [...]], ...] 形式の文書

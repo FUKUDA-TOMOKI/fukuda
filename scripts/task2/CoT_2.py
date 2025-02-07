@@ -73,7 +73,7 @@ def simple_gpt_answer(question: str, context: list) -> str:
 
     return answer_text
 
-def main(user_question: str, context: list, top_k=3, multi_steps=2) -> str:
+def main(user_question: str, context: list, top_k=4, multi_steps=3) -> str:
     """
     user_question: ユーザーからの質問
     context:       [[title, [sentence1, ...]], [title2, [...]], ...]
@@ -140,6 +140,6 @@ if __name__ == "__main__":
         ]
     ]
 
-    answer = main(sample_question, sample_context, top_k=3, multi_steps=2)
+    answer = main(sample_question, sample_context, top_k=4, multi_steps=3)
     print("=== Final Answer ===")
     print(answer)

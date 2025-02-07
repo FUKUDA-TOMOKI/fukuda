@@ -116,7 +116,7 @@ def main():
         data = [data]
 
     # 今回は answer_type 属性は使用せず、ランダムに選んだ10件のデータを抽出
-    selected_data = random.sample(data, min(1000, len(data)))
+    selected_data = random.sample(data, min(500, len(data)))
     print(f"\n抽出された総問題数: {len(selected_data)}\n")
 
     # 全体の評価指標用
